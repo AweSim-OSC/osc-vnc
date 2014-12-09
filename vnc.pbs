@@ -7,6 +7,8 @@
 
 cd ${PBS_O_WORKDIR}
 
+# FIXME: Recommended solution is Systems installs
+# the latest tigervnc module on Oxymoron
 module use /nfs/17/jnicklas/local-glenn/share/modulefiles
 module load tigervnc/1.3.1
 
@@ -59,12 +61,12 @@ SOCK_PORT=$((6900+DISPLAY_PORT))
 # also, a unit test would be nice for this...
 # expects this conversion:
 #
-#    opt2647.ten.osc.edu = vis033.osc.edu
-#    opt2648.ten.osc.edu = vis034.osc.edu
-#    opt2649.ten.osc.edu = vis035.osc.edu
-#    opt2650.ten.osc.edu = vis036.osc.edu
-#    n0691.ten.osc.edu   = oak-vis001.osc.edu
-#    n0692.ten.osc.edu   = oak-vis002.osc.edu
+#    opt2647.ten.osc.edu => vis033.osc.edu
+#    opt2648.ten.osc.edu => vis034.osc.edu
+#    opt2649.ten.osc.edu => vis035.osc.edu
+#    opt2650.ten.osc.edu => vis036.osc.edu
+#    n0691.ten.osc.edu   => oak-vis001.osc.edu
+#    n0692.ten.osc.edu   => oak-vis002.osc.edu
 #
 # 1. we grep the output of ip -a to get 192.148.248.70/24, getting the first match only to ignore 192.148.248.255
 #
