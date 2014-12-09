@@ -54,24 +54,25 @@ SOCK_PORT=$((6900+DISPLAY_PORT))
 # also, a unit test would be nice for this...
 # expects this conversion:
 #
-#        hash["opt2647.ten.osc.edu"] = "vis033.osc.edu";                                                                                                         
-#        hash["opt2648.ten.osc.edu"] = "vis034.osc.edu";                                                                                                         
-#        hash["opt2649.ten.osc.edu"] = "vis035.osc.edu";                                                                                                         
-#        hash["opt2650.ten.osc.edu"] = "vis036.osc.edu";                                                                                                         
-#        hash["n0691.ten.osc.edu"] =   "oak-vis001.osc.edu";                                                                                                     
-#        hash["n0692.ten.osc.edu"] =   "oak-vis002.osc.edu";                                                                                                     
+#    opt2647.ten.osc.edu = vis033.osc.edu
+#    opt2648.ten.osc.edu = vis034.osc.edu
+#    opt2649.ten.osc.edu = vis035.osc.edu
+#    opt2650.ten.osc.edu = vis036.osc.edu
+#    n0691.ten.osc.edu   = oak-vis001.osc.edu
+#    n0692.ten.osc.edu   = oak-vis002.osc.edu
+#
+# 1. we grep the output of ip -a to get 192.148.248.70/24, getting the first match only to ignore 192.148.248.255
+#
+#     8: eth0.70@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue
+#         link/ether 00:1a:64:60:42:ae brd ff:ff:ff:ff:ff:ff
+#         inet 192.148.248.70/24 brd 192.148.248.255 scope global eth0.70
+#
+# 2. we use this as argument to dig i.e. dig +short -x 192.148.248.70
+#
+#     vis033.osc.edu.
+#
+# 3. we get rid of the ending .
 function vis_hostname_alias {
-    # 1. we grep the output of ip -a to get 192.148.248.70/24, getting the first match only to ignore 192.148.248.255
-    # 
-    #     8: eth0.70@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue 
-    #         link/ether 00:1a:64:60:42:ae brd ff:ff:ff:ff:ff:ff
-    #         inet 192.148.248.70/24 brd 192.148.248.255 scope global eth0.70
-    # 
-    # 2. we use this as argument to dig i.e. dig +short -x 192.148.248.70
-    #
-    #     vis033.osc.edu.
-    #
-    # 3. we get rid of the ending .
     /sbin/ip a s to 192.148.0.0/16 | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -n1 | xargs dig +short -x | sed 's/\.$//'
 }
 
