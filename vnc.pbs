@@ -28,7 +28,6 @@ HOST=$(uname -n)
 
 # Create password file
 PASSFILE=${MYTMPDIR}/pass
-#PASSWORD=$(head -c 500 /dev/urandom | tr -dc '[:alnum:]' | fold -w 16 | head -n 1)
 PASSWORD=$(mkpasswd -s 0 -l 10)
 echo ${PASSWORD} | vncpasswd -f > ${PASSFILE}
 chmod 600 ${PASSFILE}
