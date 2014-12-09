@@ -1,10 +1,5 @@
 #!/bin/bash
 
-#if [ -e ${HOME}/.Xresources ]; then
-#  xrdb ${HOME}/.Xresources
-#fi
-#xsetroot -solid grey
-
 /usr/bin/fvwm -f ${PWD}/fvwm/fvwmrc &
 
 
