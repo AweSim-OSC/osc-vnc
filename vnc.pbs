@@ -35,7 +35,7 @@ chmod 600 ${PASSFILE}
 
 # Start up vnc server and create output
 VNCFILE=${MYTMPDIR}/vnc.out
-vncserver -geometry 1024x768 -PasswordFile=${PASSFILE} -MaxDisconnectionTime=60 -httpd= -httpPort=0 -fg -autokill &> ${VNCFILE} &
+vncserver -geometry 1024x768 -PasswordFile=${PASSFILE} -MaxDisconnectionTime=60 -httpd= -httpPort=0 -fg &> ${VNCFILE} &
 VNC_PID=${!}
 sleep 5
 
