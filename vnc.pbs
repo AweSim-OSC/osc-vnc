@@ -33,6 +33,9 @@ echo ${PASSWORD} | vncpasswd -f > ${PASSFILE}
 chmod 600 ${PASSFILE}
 
 # Start up vnc server and create output
+# -MaxDisconnectionTime = max time server will run without user before dying
+# -fg = runs in foreground, will die when user closes app and xstartup script finishes
+#       also used to keep batch job alive by waiting until $VNC_PID finishes
 VNCFILE=${MYTMPDIR}/vnc.out
 vncserver -geometry 1024x768 -PasswordFile=${PASSFILE} -MaxDisconnectionTime=60 -httpd= -httpPort=0 -fg &> ${VNCFILE} &
 VNC_PID=${!}
