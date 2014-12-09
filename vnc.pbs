@@ -21,6 +21,9 @@ trap clean_up TERM EXIT
 cp xstartup ${HOME}/.vnc/.
 
 # Make temporary directory and be sure to clean it up
+# FIXME: Probably don't want random directory for production
+# this is only used for testing purposes so I can run multiple
+# VNC sessions in this one directory
 MYTMPDIR=$(mktemp -p . -d tmp.XXXXX)
 
 # Get local hostname
@@ -47,6 +50,8 @@ HOST_PORT=$((5900+DISPLAY_PORT))
 SOCK_PORT=$((6900+DISPLAY_PORT))
 
 # Sockify this
+# FIXME: can remove --web /nfs/17/jnicklas/noVNC if you have your own
+# html page that includes the noVNC javascript library
 /nfs/17/jnicklas/noVNC/utils/websockify --web /nfs/17/jnicklas/noVNC/ ${SOCK_PORT} localhost:${HOST_PORT} > /dev/null 2>&1 &
 
 # Get correct host
