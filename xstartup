@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#if [ -e ${HOME}/.Xresources ]; then
+#  xrdb ${HOME}/.Xresources
+#fi
+#xsetroot -solid grey
+
+/usr/bin/fvwm -f ${PWD}/fvwmrc &
+
+
+. /etc/profile.d/modules-env.sh
+module load VirtualGL-2.3
+module load paraview-3.8.0
+vglrun paraview

@@ -1,0 +1,75 @@
+#PBS -l walltime=00:05:00
+#PBS -l nodes=1:ppn=1:glenn
+#PBS -M noreply@osc.edu
+#PBS -j oe
+#PBS -N vnc
+#PBS -S /bin/bash
+
+cd ${PBS_O_WORKDIR}
+
+module use /nfs/17/jnicklas/local-glenn/share/modulefiles
+module load tigervnc/1.3.1
+
+# Clean up function
+function clean_up {
+    rm -fr ${MYTMPDIR}
+    vncserver -kill :${DISPLAY_PORT}
+}
+trap clean_up TERM EXIT
+
+# Copy over xstartup
+cp xstartup ${HOME}/.vnc/.
+
+# Make temporary directory and be sure to clean it up
+MYTMPDIR=$(mktemp -p . -d tmp.XXXXX)
+
+# Get local hostname
+HOST=$(uname -n)
+
+# Create password file
+PASSFILE=${MYTMPDIR}/pass
+#PASSWORD=$(head -c 500 /dev/urandom | tr -dc '[:alnum:]' | fold -w 16 | head -n 1)
+PASSWORD=$(mkpasswd -s 0 -l 10)
+echo ${PASSWORD} | vncpasswd -f > ${PASSFILE}
+chmod 600 ${PASSFILE}
+
+# Start up vnc server and create output
+VNCFILE=${MYTMPDIR}/vnc.out
+vncserver -geometry 1024x768 -PasswordFile=${PASSFILE} -MaxDisconnectionTime=60 -httpd= -httpPort=0 -fg -autokill &> ${VNCFILE} &
+VNC_PID=${!}
+sleep 5
+
+# Parse output for ports
+DISPLAY_PORT=$(awk -F':' '/^New/{print $NF}' ${VNCFILE})
+HOST_PORT=$((5900+DISPLAY_PORT))
+SOCK_PORT=$((6900+DISPLAY_PORT))
+
+# Sockify this
+/nfs/17/jnicklas/noVNC/utils/websockify --web /nfs/17/jnicklas/noVNC/ ${SOCK_PORT} localhost:${HOST_PORT} > /dev/null 2>&1 &
+
+# Get correct host
+VISHOST=$(echo ${HOST} | awk 'BEGIN{
+        hash["opt2647.ten.osc.edu"] = "vis033.osc.edu";
+        hash["opt2648.ten.osc.edu"] = "vis034.osc.edu";
+        hash["opt2649.ten.osc.edu"] = "vis035.osc.edu";
+        hash["opt2650.ten.osc.edu"] = "vis036.osc.edu";
+        hash["n0691.ten.osc.edu"] =   "oak-vis001.osc.edu";
+        hash["n0692.ten.osc.edu"] =   "oak-vis002.osc.edu";
+    }
+
+    {
+        print hash[$1];
+    }')
+
+# Output information
+OUTFILE=${MYTMPDIR}/output
+echo "Host: ${VISHOST}" > ${OUTFILE}
+echo "Port: ${HOST_PORT}" >> ${OUTFILE}
+echo "Pass: ${PASSWORD}" >> ${OUTFILE}
+echo "Web: http://${VISHOST}:${SOCK_PORT}/vnc_auto.html?password=${PASSWORD}" >> ${OUTFILE}
+
+# Wait for background jobs
+wait ${VNC_PID}
+
+# Exit cleanly
+exit 0

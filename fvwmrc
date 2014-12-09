@@ -1,0 +1,73 @@
+SetEnv  XPMPath $[PWD]/winxp/images
+
+# Makes the Maximize button look pressed-in when the window is maximized
+Style * MWMButtons
+# Allows turns off the mwm hints completely
+Style * NoFuncHint
+# Attempt to recognize & respect the mwm decoration hints that applications occasionally use
+Style * MWMDecor
+# Causes transient windows, which are normally left undecorated, to be given the usual fvwm decorations (title bar, buttons, etc.)
+Style * DecorateTransient
+Style * SmartPlacement
+
+# Tells fvwm the maximum size window with which opaque window movement should be used
+OpaqueMoveSize 100
+# Specifies the percentage of a page to scroll when the cursor hits the edge of a page
+EdgeScroll 100 100
+# The special flag Clear clears any existing flags
+ButtonStyle 2 - Clear
+TitleStyle    Active      AdjustedPixmap  $[XPMPath]/title-active.xpm     -- Flat
+TitleStyle    Inactive    AdjustedPixmap  $[XPMPath]/title-inactive.xpm   -- Flat
+ButtonStyle 2 ActiveUp    AdjustedPixmap  $[XPMPath]/close-activeup.xpm   -- UseTitleStyle  Flat
+ButtonStyle 2 ActiveDown  AdjustedPixmap  $[XPMPath]/close-activedown.xpm -- UseTitleStyle  Flat
+ButtonStyle 2 AllInactive AdjustedPixmap  $[XPMPath]/close-inactive.xpm   -- UseTitleStyle  Flat
+TitleStyle    Centered    Height          24
+BorderStyle   Active      Colorset
+BorderStyle   Inactive    Solid           Dodgerblue2 -- HiddenHandles NoInset
+BorderStyle   Active      Solid           Steelblue3  -- HiddenHandles NoInset
+
+ButtonStyle 4 - Clear
+ButtonStyle 4 ActiveUp    AdjustedPixmap  $[XPMPath]/maximize-activeup.xpm   -- UseTitleStyle  Flat
+ButtonStyle 4 ActiveDown  AdjustedPixmap  $[XPMPath]/maximize-activedown.xpm -- UseTitleStyle  Flat
+ButtonStyle 4 AllInactive AdjustedPixmap  $[XPMPath]/maximize-inactive.xpm   -- UseTitleStyle  Flat
+
+# BorderWidth - width of the border to place the window if it does not have resize-handles
+# HandleWidth - width of the border to place the window if it does have resize-handles
+Style * BorderWidth 4, HandleWidth 4
+# ForeColor - foreground color (black)
+# BackColor - background color (steelblue3)
+Style * ForeColor black, BackColor Steelblue3
+# HilightFore - window has focus foreground color (white)
+# HilightBack - window has focus background color (dodgerblue2)
+Style * HilightFore white, HilightBack Dodgerblue2
+# Font - name of the font r-regular 14-size
+Style * Font -*-helvetica-medium-r-*-*-14-*-*-*-*-*-*-* 
+# Start Windows in the top left corner unless the application specifies otherwise
+Style * PositionPlacement
+#Style * PositionPlacement Center
+
+# R - root window
+# W - application window
+# D - desktop application
+# T - window title-bar
+# S - window side, top, or bottom bar
+# F - window frame (corners)
+# I - icon window
+# 2 - 0-9 title-bar buttons
+Mouse   0       RI      A       -
+Mouse   0       2       A       Close
+Mouse   1       2       A       Close
+Mouse   2       2       A       Close
+Mouse   1       RSFTI   A       -
+Mouse   2       RSFTI   A       -
+Mouse	0	4	A	Maximize	100	100
+
+DesktopSize 1x1
+
+# Added below 3 to remove root menu, F1 & all help menus
+DestroyMenu MenuFvwmRoot
+Key F1 R A -
+Silent Key Help R A -
+
+# Wine fix
+Style * Lenience
