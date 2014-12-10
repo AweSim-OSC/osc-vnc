@@ -1,0 +1,92 @@
+#PBS -l walltime=00:05:00
+#PBS -l nodes=1:ppn=1:glenn
+#PBS -M noreply@osc.edu
+#PBS -j oe
+#PBS -N vnc
+#PBS -S /bin/bash
+
+cd ${PBS_O_WORKDIR}
+
+module load turbovnc-1.2
+
+# Clean up function
+function clean_up {
+    rm -fr ${MYTMPDIR}
+}
+trap clean_up TERM EXIT
+
+# Copy over xstartup
+cp xstartup ${HOME}/.vnc/.
+
+# Make temporary directory and be sure to clean it up
+# FIXME: Probably don't want random directory for production
+# this is only used for testing purposes so I can run multiple
+# VNC sessions in this one directory
+MYTMPDIR=$(mktemp -p . -d tmp.XXXXX)
+
+# Get local hostname
+HOST=$(uname -n)
+
+# Start up vnc server and create output
+# -MaxDisconnectionTime = max time server will run without user before dying
+# -fg = runs in foreground, will die when user closes app and xstartup script finishes
+#       also used to keep batch job alive by waiting until $VNC_PID finishes
+VNCFILE=${MYTMPDIR}/vnc.out
+vncserver -geometry 1024x768 -otp -otpauth -idletimeout 60 -nohttp -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -fg -xstartup ${PWD}/xstartup &> ${VNCFILE} &
+VNC_PID=${!}
+sleep 5
+
+# Parse output for ports
+DISPLAY_PORT=$(awk -F':' '/^Desktop/{print $NF}' ${VNCFILE})
+HOST_PORT=$((5900+DISPLAY_PORT))
+SOCK_PORT=$((6900+DISPLAY_PORT))
+
+# Parse output for password
+PASSWORD=$(awk '/^Full/{print $NF}' ${VNCFILE})
+
+# Sockify this
+# FIXME: can remove --web /nfs/17/jnicklas/noVNC if you have your own
+# html page that includes the noVNC javascript library
+/nfs/17/jnicklas/noVNC/utils/websockify --web /nfs/17/jnicklas/noVNC/ ${SOCK_PORT} localhost:${HOST_PORT} > /dev/null 2>&1 &
+
+# Get correct host
+# FIXME: move this and other methods to a util.bash that we can source?
+# also, a unit test would be nice for this...
+# expects this conversion:
+#
+#    opt2647.ten.osc.edu => vis033.osc.edu
+#    opt2648.ten.osc.edu => vis034.osc.edu
+#    opt2649.ten.osc.edu => vis035.osc.edu
+#    opt2650.ten.osc.edu => vis036.osc.edu
+#    n0691.ten.osc.edu   => oak-vis001.osc.edu
+#    n0692.ten.osc.edu   => oak-vis002.osc.edu
+#
+# 1. we grep the output of ip -a to get 192.148.248.70/24, getting the first match only to ignore 192.148.248.255
+#
+#     8: eth0.70@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue
+#         link/ether 00:1a:64:60:42:ae brd ff:ff:ff:ff:ff:ff
+#         inet 192.148.248.70/24 brd 192.148.248.255 scope global eth0.70
+#
+# 2. we use this as argument to dig i.e. dig +short -x 192.148.248.70
+#
+#     vis033.osc.edu.
+#
+# 3. we get rid of the ending .
+function vis_hostname_alias {
+    /sbin/ip a s to 192.148.0.0/16 | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -n1 | xargs dig +short -x | sed 's/\.$//'
+}
+
+VISHOST=$(vis_hostname_alias)
+
+# Output information
+OUTFILE=${MYTMPDIR}/output
+echo "Host: ${VISHOST}" > ${OUTFILE}
+echo "Port: ${HOST_PORT}" >> ${OUTFILE}
+echo "Pass: ${PASSWORD}" >> ${OUTFILE}
+echo "Web: http://${VISHOST}:${SOCK_PORT}/vnc_auto.html?password=${PASSWORD}" >> ${OUTFILE}
+
+# Wait for background jobs
+wait ${VNC_PID}
+
+# Exit cleanly
+exit 0
