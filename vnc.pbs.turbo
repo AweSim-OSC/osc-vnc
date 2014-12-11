@@ -2,14 +2,16 @@
 #PBS -l nodes=1:ppn=1:glenn
 #PBS -M noreply@osc.edu
 #PBS -j oe
+#PBS -o ${OUTDIR}/${PBS_JOBID}.out
 #PBS -N vnc
 #PBS -S /bin/bash
 #PBS -N vnctest
 
-XSTARTUP=${PBS_O_WORKDIR}/xstartup
-OUTFILE=${PBS_O_WORKDIR}/${PBS_JOBID}.conn
-# VNCFILE=${TMPDIR}/vnc.out
-VNCFILE=${PBS_O_WORKDIR}/${PBS_JOBID}.vnc.out
+# requires these two env vars set: OUTDIR && XSTARTUP
+# FIXME: throw error if these don't exist
+
+OUTFILE=${OUTDIR}/${PBS_JOBID}.conn
+VNCFILE=${OUTDIR}/${PBS_JOBID}.vnc.out
 
 module load turbovnc-1.2
 
