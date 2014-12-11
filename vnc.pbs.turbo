@@ -5,7 +5,6 @@
 #PBS -o ${OUTDIR}/${PBS_JOBID}.out
 #PBS -N vnc
 #PBS -S /bin/bash
-#PBS -N vnctest
 
 # requires these two env vars set: OUTDIR && XSTARTUP
 # FIXME: throw error if these don't exist
