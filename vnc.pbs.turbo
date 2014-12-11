@@ -21,7 +21,7 @@ HOST=$(uname -n)
 # -MaxDisconnectionTime = max time server will run without user before dying
 # -fg = runs in foreground, will die when user closes app and xstartup script finishes
 #       also used to keep batch job alive by waiting until $VNC_PID finishes
-vncserver -geometry 1024x768 -otp -otpauth -idletimeout 60 -nohttp -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -fg -xstartup ${XSTARTUP} &> ${VNCFILE} &
+vncserver -geometry 1024x768 -otp -otpauth -novncauth -idletimeout 60 -nohttp -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -fg -xstartup ${XSTARTUP} &> ${VNCFILE} &
 VNC_PID=${!}
 sleep 5
 
@@ -66,6 +66,7 @@ VISHOST=$(vis_hostname_alias)
 echo "Host: ${VISHOST}" > ${OUTFILE}
 echo "Port: ${HOST_PORT}" >> ${OUTFILE}
 echo "Pass: ${PASSWORD}" >> ${OUTFILE}
+echo "Display: ${DISPLAY_PORT}" >> ${OUTFILE}
 
 # Wait for background jobs
 wait ${VNC_PID}
