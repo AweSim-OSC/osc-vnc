@@ -12,8 +12,9 @@
 OUTFILE=${OUTDIR}/${PBS_JOBID}.conn
 VNCFILE=${OUTDIR}/${PBS_JOBID}.vnc.out
 
-module load turbovnc-1.2
+cd ${PBS_O_WORKDIR}
 
+module load turbovnc-1.2
 
 # Get local hostname
 HOST=$(uname -n)
