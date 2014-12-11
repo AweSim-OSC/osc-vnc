@@ -2,6 +2,7 @@
 #PBS -l nodes=1:ppn=1:glenn
 #PBS -M noreply@osc.edu
 #PBS -j oe
+#PBS -o ${PBS_JOBID}.output
 #PBS -N vnc
 #PBS -S /bin/bash
 
