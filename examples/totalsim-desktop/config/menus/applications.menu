@@ -1,0 +1,84 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+ "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+
+<Menu>
+
+  <Name>Applications</Name>
+  <Directory>Applications.directory</Directory>
+
+  <!-- Scan legacy dirs first, as later items take priority -->
+  <LegacyDir>/usr/share/gnome/apps</LegacyDir>
+  <LegacyDir>/etc/X11/applnk</LegacyDir>
+
+  <!-- Read standard .directory and .desktop file locations -->
+  <KDELegacyDirs/>
+  <DefaultAppDirs/>
+  <DefaultDirectoryDirs/>
+
+  <!-- Add stock tarball installs to menus -->
+  <AppDir>/usr/local/share/applications</AppDir>
+
+  <!-- Read in overrides and child menus from applications.d -->
+  <DefaultMergeDirs/>
+
+  <!-- Add a separator after the submenus -->
+  <Layout><Merge type="menus"/><Separator/><Merge type="files"/></Layout>
+
+  <!-- Accessories submenu -->
+  <Menu>
+    <Name>Accessories</Name>
+    <Directory>Accessories.directory</Directory>
+    <Include>
+      <And>
+        <Category>Utility</Category>
+        <Not>
+          <Category>System</Category>
+        </Not>
+      </And>
+    </Include>
+  </Menu> <!-- End Accessories -->
+
+  <!-- System Tools-->
+  <Menu>
+    <Name>System Tools</Name>
+    <Directory>System.directory</Directory>
+    <Include>
+      <And>
+        <Category>System</Category>
+        <Not><Category>Screensaver</Category></Not>
+        <Not><Category>X-Red-Hat-ServerConfig</Category></Not>
+        <Not><Category>SystemSetup</Category></Not>
+	<Not><Category>Monitor</Category></Not>
+      </And>
+    </Include>
+
+    <Exclude>
+      <Filename>gdmflexiserver.desktop</Filename>
+      <Filename>gnome-file-roller.desktop</Filename>
+      <Filename>gnome-gfloppy.desktop</Filename>
+      <Filename>redhat-authconfig.desktop</Filename>
+      <Filename>redhat-usermount.desktop</Filename>
+      <Filename>system-config-date.desktop</Filename>
+      <Filename>system-config-keyboard.desktop</Filename>
+      <Filename>system-config-language.desktop</Filename>
+      <Filename>system-config-mouse.desktop</Filename>
+      <Filename>system-config-nfs.desktop</Filename>
+      <Filename>pirut.desktop</Filename>
+      <Filename>system-config-rootpassword.desktop</Filename>
+      <Filename>system-config-securitylevel.desktop</Filename>
+      <Filename>system-config-services.desktop</Filename>
+      <Filename>system-config-soundcard.desktop</Filename>
+      <Filename>system-config-users.desktop</Filename>
+      <Filename>redhat-neat.desktop</Filename>
+      <Filename>redhat-neat-control.desktop</Filename>
+      <Filename>redhat-printconf-gui.desktop</Filename>
+      <Filename>redhat-rhn-up2date-config.desktop</Filename>
+      <Filename>redhat-switchdesk.desktop</Filename>
+      <Filename>redhat-switchmail.desktop</Filename>
+      <Filename>redhat-switch-printer.desktop</Filename>
+    </Exclude>
+  </Menu>   <!-- End System Tools -->
+
+  <MergeFile>applications-kmenuedit.menu</MergeFile>
+
+</Menu> <!-- End Applications -->

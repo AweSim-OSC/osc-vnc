@@ -2,3 +2,7 @@
 
 # Reset desktop background to default
 rm -fr $HOME/.gconf/desktop/gnome/background
+
+# Remove menus
+rm -fr $HOME/.config/menus/applications.menu
+rm -fr $HOME/.config/menus/settings.menu

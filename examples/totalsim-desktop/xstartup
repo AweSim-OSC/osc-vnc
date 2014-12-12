@@ -11,4 +11,8 @@ gconftool-2 -t str -s /desktop/gnome/background/picture_options centered
 gconftool-2 -t str -s /desktop/gnome/background/color_shading_type solid
 gconftool-2 -t str -s /desktop/gnome/background/primary_color \#ffffff
 
+# Add new menus
+cp $DIR/config/menus/applications.menu $HOME/.config/menus/.
+cp $DIR/config/menus/settings.menu $HOME/.config/menus/.
+
 exec /etc/X11/xinit/xinitrc
