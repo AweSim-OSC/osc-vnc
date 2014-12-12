@@ -12,4 +12,8 @@ On a webservices node:
 bundle exec ./vncsubmit
 ```
 
+To get a list of arguments type:
 
+```
+bundle exec ./vncsubmit -h
+```
