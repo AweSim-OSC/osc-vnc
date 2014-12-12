@@ -10,32 +10,42 @@ cd ${PBS_O_WORKDIR}
 
 module load turbovnc-1.2
 
-# requires these two env vars set: OUTDIR && XSTARTUP
+# requires these two env vars set: OUTDIR && XSTARTUP_DIR
+
+XSTARTUP=xstartup
+XLOGOUT=xlogout
 
 if [ -z "${OUTDIR}" ]
 then
     OUTDIR=${PBS_O_WORKDIR}
 fi
 
-if [ -z "${XSTARTUP}" ]
-then
-    >&2 echo "ERROR: Please supply an \$XSTARTUP variable."
-    exit
-fi
-
 OUTFILE=${OUTDIR}/${PBS_JOBID}.conn
 VNCFILE=${OUTDIR}/${PBS_JOBID}.vnc.out
+
+# Check for xstartup, will be removed later with better solution
+if [ -z "${XSTARTUP_DIR}" ]
+then
+    >&2 echo "ERROR: Please supply an \$XSTARTUP_DIR variable."
+    exit
+else
+    if [ ! -e "${XSTARTUP_DIR}/${XSTARTUP}" ]
+    then
+        >&2 echo "ERROR: ${XSTARTUP_DIR}/${XSTARTUP} doesn't exist"
+        exit
+    fi
+fi
 
 # Get local hostname
 HOST=$(uname -n)
 
-# Clean up script if provided
+# Clean up script run when "vncserver" finishes
 function clean_up {
     echo "Exiting..."
-    if [ ! -z "${XLOGOUT}" ]
+    if [ -e "${XSTARTUP_DIR}/${XLOGOUT}" ]
     then
         echo "Running logout script"
-        . ${XLOGOUT}
+        . ${XSTARTUP_DIR}/${XLOGOUT}
     fi
 }
 trap clean_up TERM EXIT
@@ -46,7 +56,7 @@ trap clean_up TERM EXIT
 #       also used to keep batch job alive by waiting until $VNC_PID finishes
 # -novncauth = vncserver enables all three auth types by default so disable the one that
 #       expects a password file to be created so it runs even if no passwd file exists
-vncserver -geometry 1024x768 -dpi 96 -otp -otpauth -novncauth -idletimeout 60 -nohttp -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -fg -xstartup ${XSTARTUP} &> ${VNCFILE} &
+vncserver -geometry 1024x768 -dpi 96 -otp -otpauth -novncauth -idletimeout 60 -nohttp -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -fg -xstartup ${XSTARTUP_DIR}/${XSTARTUP} &> ${VNCFILE} &
 VNC_PID=${!}
 sleep 5
 
