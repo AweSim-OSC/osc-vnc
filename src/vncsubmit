@@ -89,7 +89,7 @@ attropl << {name: PBS::ATTR_o, value: "#{host}:#{options[:outdir]}/$PBS_JOBID.ou
 attropl << {name: PBS::ATTR_j, value: "oe"}
 attropl << {name: PBS::ATTR_M, value: "noreply@osc.edu"}
 attropl << {name: PBS::ATTR_S, value: "/bin/bash"}
-attropl << {name: PBS::ATTR_v, value: "PBS_O_WORKDIR=#{PATH},XSTARTUP_DIR=#{options[:xdir]}"}
+attropl << {name: PBS::ATTR_v, value: "PBS_PATH=#{PATH},OUTDIR=#{options[:outdir]},XSTARTUP_DIR=#{options[:xdir]}"}
 
 # Submit new job
 pbsid = PBS.pbs_submit(c, attropl, "#{PATH}/vnc.pbs", nil, nil)

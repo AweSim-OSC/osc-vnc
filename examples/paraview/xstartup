@@ -1,6 +1,6 @@
 #!/bin/bash
 
-/usr/bin/fvwm -f ${PWD}/fvwm/fvwmrc &
+PBS_PATH=${PBS_PATH} /usr/bin/fvwm -f ${PBS_PATH}/fvwm/fvwmrc &
 
 
 . /etc/profile.d/modules-env.sh
