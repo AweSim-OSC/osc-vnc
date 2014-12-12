@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PBS_PATH=${PBS_PATH} /usr/bin/fvwm -f ${PBS_PATH}/fvwm/fvwmrc &
+XSTARTUP_DIR=${XSTARTUP_DIR} /usr/bin/fvwm -f ${XSTARTUP_DIR}/fvwm/fvwmrc &
 
 
 . /etc/profile.d/modules-env.sh

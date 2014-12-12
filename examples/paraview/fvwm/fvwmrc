@@ -1,4 +1,4 @@
-SetEnv  XPMPath $[PBS_PATH]/fvwm/winxp/images
+SetEnv  XPMPath $[XSTARTUP_DIR]/fvwm/winxp/images
 
 # Makes the Maximize button look pressed-in when the window is maximized
 Style * MWMButtons
