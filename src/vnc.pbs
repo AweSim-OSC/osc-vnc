@@ -6,6 +6,10 @@
 #PBS -N vnc
 #PBS -S /bin/bash
 
+cd ${PBS_O_WORKDIR}
+
+module load turbovnc-1.2
+
 # requires these two env vars set: OUTDIR && XSTARTUP
 
 if [ -z "${OUTDIR}" ]
@@ -16,18 +20,25 @@ fi
 if [ -z "${XSTARTUP}" ]
 then
     >&2 echo "ERROR: Please supply an \$XSTARTUP variable."
-    exit 0
+    exit
 fi
 
 OUTFILE=${OUTDIR}/${PBS_JOBID}.conn
 VNCFILE=${OUTDIR}/${PBS_JOBID}.vnc.out
 
-cd ${PBS_O_WORKDIR}
-
-module load turbovnc-1.2
-
 # Get local hostname
 HOST=$(uname -n)
+
+# Clean up script if provided
+function clean_up {
+    echo "Exiting..."
+    if [ ! -z "${XLOGOUT}" ]
+    then
+        echo "Running logout script"
+        . ${XLOGOUT}
+    fi
+}
+trap clean_up TERM EXIT
 
 # Start up vnc server and create output
 # -MaxDisconnectionTime = max time server will run without user before dying
@@ -82,4 +93,4 @@ echo "Display: ${DISPLAY_PORT}" >> ${OUTFILE}
 wait ${VNC_PID}
 
 # Exit cleanly
-exit 0
+exit
