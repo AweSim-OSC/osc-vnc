@@ -1,0 +1,16 @@
+GIT
+  remote: https://github.com/nickjer/pbs-ruby.git
+  revision: 88ccf1a3ce04c7cf74f94931b0f2fc4ceed988e1
+  specs:
+    pbs (0.0.1)
+      ffi (~> 1.9, >= 1.9.6)
+
+GEM
+  specs:
+    ffi (1.9.6)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  pbs!
