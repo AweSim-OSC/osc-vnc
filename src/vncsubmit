@@ -72,12 +72,8 @@ end
 # Make output directory if it doesn't already exist
 FileUtils.mkdir_p(options[:outdir])
 
-# Use latest torque library
-PBS.set('/usr/local/torque-4.2.8/lib/libtorque.so')
-
-# Special batch server for oxymoron cluster
-server = 'oak-batch.osc.edu:17001'
-c = PBS.pbs_connect(server)
+# Connect to oxymoron cluster (note: must be on web services node with latest torque module)
+c = PBS.pbs_connect(PBS.pbs_default())
 
 # Setup VNC job
 host = Socket.gethostname
