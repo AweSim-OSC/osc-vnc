@@ -9,7 +9,8 @@ bundle install --local
 On a webservices node:
 
 ```
-bundle exec ./vncsubmit
+module switch torque torque-4.2.8_vis
+bundle exec ./vncsubmit [options] -x <xstartup_dir>
 ```
 
 To get a list of arguments type:
