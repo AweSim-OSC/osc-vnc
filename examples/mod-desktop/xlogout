@@ -1,4 +1,0 @@
-#!/bin/bash
-
-# Reset background wallpaper to default
-gconftool-2 -t str -s /desktop/gnome/background/picture_filename /usr/share/backgrounds/images/default.jpg

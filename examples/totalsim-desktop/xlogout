@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Reset desktop background to default
+rm -fr $HOME/.gconf/desktop/gnome/background

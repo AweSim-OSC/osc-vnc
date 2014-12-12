@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# Get directory this script is called in
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-
-# Change background wallpaper
-gconftool-2 -t str -s /desktop/gnome/background/picture_filename $DIR/images/03784_pegasusnebula_1680x1050.jpg
-
-exec /etc/X11/xinit/xinitrc

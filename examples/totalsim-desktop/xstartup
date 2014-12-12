@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Get directory this script is called in
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+# Change background wallpaper and center it
+gconftool-2 -t str -s /desktop/gnome/background/picture_filename $DIR/images/TS_LOGO.jpg
+gconftool-2 -t str -s /desktop/gnome/background/picture_options centered
+
+# Set background color to white
+gconftool-2 -t str -s /desktop/gnome/background/color_shading_type solid
+gconftool-2 -t str -s /desktop/gnome/background/primary_color \#ffffff
+
+exec /etc/X11/xinit/xinitrc
