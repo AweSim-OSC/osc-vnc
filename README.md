@@ -9,7 +9,6 @@ bundle install --local
 On a webservices node:
 
 ```
-module switch torque torque-4.2.8_vis
 bundle exec ./vncsubmit [options] -x <xstartup_dir>
 ```
 
