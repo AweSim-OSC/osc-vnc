@@ -7,7 +7,6 @@ XSTARTUP=${XSTARTUP_DIR}/xstartup
 XLOGOUT=${XSTARTUP_DIR}/xlogout
 
 OUTFILE=${OUTDIR}/${PBS_JOBID}.conn
-VNCFILE=${OUTDIR}/${PBS_JOBID}.vnc.out
 
 # Get local hostname
 HOST=$(uname -n)
@@ -27,16 +26,17 @@ trap clean_up TERM EXIT
 # -idletimeout = max time server will run without user before dying
 # -novncauth = vncserver enables all three auth types by default so disable the one that
 #       expects a password file to be created so it runs even if no passwd file exists
-vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -xstartup ${XSTARTUP} &> ${VNCFILE}
+VNC_OUT=$(vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -xstartup ${XSTARTUP} 2>&1)
+echo ${VNCOUT}
 VNC_PID=$(pgrep -s 0 Xvnc)
 
 # Parse output for ports
-DISPLAY_PORT=$(awk -F':' '/^Desktop/{print $NF}' ${VNCFILE})
+DISPLAY_PORT=$(echo "${VNC_OUT}" | awk -F':' '/^Desktop/{print $NF}')
 HOST_PORT=$((5900+DISPLAY_PORT))
 SOCK_PORT=$((6900+DISPLAY_PORT))
 
 # Parse output for password
-PASSWORD=$(awk '/^Full/{print $NF}' ${VNCFILE})
+PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
 
 # Get correct host
 #
