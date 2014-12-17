@@ -7,3 +7,5 @@ XSTARTUP_DIR=${XSTARTUP_DIR} /usr/bin/fvwm -f ${XSTARTUP_DIR}/fvwm/fvwmrc &
 module load VirtualGL-2.3
 module load paraview-3.8.0
 vglrun paraview
+
+vncserver -kill $DISPLAY

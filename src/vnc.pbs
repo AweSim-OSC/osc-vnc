@@ -25,13 +25,10 @@ trap clean_up TERM EXIT
 
 # Start up vnc server and create output
 # -idletimeout = max time server will run without user before dying
-# -fg = runs in foreground, will die when user closes app and xstartup script finishes
-#       also used to keep batch job alive by waiting until $VNC_PID finishes
 # -novncauth = vncserver enables all three auth types by default so disable the one that
 #       expects a password file to be created so it runs even if no passwd file exists
-vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -fg -xstartup ${XSTARTUP} &> ${VNCFILE} &
-VNC_PID=${!}
-sleep 5
+vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -xstartup ${XSTARTUP} &> ${VNCFILE}
+VNC_PID=$(pgrep -s 0 Xvnc)
 
 # Parse output for ports
 DISPLAY_PORT=$(awk -F':' '/^Desktop/{print $NF}' ${VNCFILE})
@@ -72,8 +69,8 @@ echo "Port: ${HOST_PORT}" >> ${OUTFILE}
 echo "Pass: ${PASSWORD}" >> ${OUTFILE}
 echo "Display: ${DISPLAY_PORT}" >> ${OUTFILE}
 
-# Wait for background jobs
-wait ${VNC_PID}
+# Wait for vnc server process to finish
+while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
 
 # Exit cleanly
 exit

@@ -16,3 +16,5 @@ cp $DIR/config/menus/applications.menu $HOME/.config/menus/.
 cp $DIR/config/menus/settings.menu $HOME/.config/menus/.
 
 exec /etc/X11/xinit/xinitrc
+
+vncserver -kill $DISPLAY
