@@ -1,4 +1,4 @@
-# Osc::Vnc
+# OSC::VNC
 
 TODO: Write a gem description
 
