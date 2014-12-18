@@ -5,10 +5,6 @@ require "socket"
 
 module OSC
   class VNC
-    # Default options
-    DEFAULT = {name: 'vnc', cluster: 'glenn', outdir: ENV['PWD'], xdir: nil,
-               xstartup: 'xstartup', xlogout: 'xlogout', walltime: '00:05:00'}
-    
     # Oxymoron torque library
     TORQUE_LIB = '/usr/local/torque-4.2.8/lib/libtorque.so'
 
@@ -21,52 +17,60 @@ module OSC
     # Initialize PBS Ruby with special torque library for oxymoron cluster
     PBS.init TORQUE_LIB
 
+    attr_accessor :name, :cluster, :outdir, :xdir, :xstartup, :xlogout, :walltime
+
     def initialize(options)
-      options = DEFAULT.merge(options)
+      @name = options[:name] || 'vnc'
+      @cluster = options[:cluster] || 'glenn'
+      @outdir = options[:outdir] || ENV['PWD']
+      @xdir = options[:xdir]
+      @xstartup = options[:xstartup] || 'xstartup'
+      @xlogout = options[:xlogout] || 'xlogout'
+      @walltime = options[:walltime] || '00:05:00'
 
-      # xstartup directory is required
-      raise ArgumentError, "Directory of the xstartup script is undefined" unless options[:xdir]
+      # Check for errors
+      raise ArgumentError, "xstartup directory is undefined" unless xdir
+      raise ArgumentError, "xstartup script is not found" unless File.file?("#{xdir}/#{xstartup}")
+      raise ArgumentError, "output directory is a file" if File.file?(outdir)
+    end
 
+    def run()
       # Make output directory if it doesn't already exist
-      FileUtils.mkdir_p(options[:outdir])
+      FileUtils.mkdir_p(outdir)
 
-      # Output jobid to stdout
-      puts submit(options)
+      # Connect to oxymoron cluster
+      c = PBS.pbs_connect(SERVER)
+
+      # Create PBS head
+      attropl = create_head()
+
+      # Submit new job
+      pbsid = PBS.pbs_submit(c, attropl, "#{BATCH_SCRIPT}", nil, nil)
+
+      # Disconnect after submission
+      PBS.pbs_disconnect(c)
+
+      # FIXME 
+      puts pbsid
     end
 
     ########################################
     # Private methods
     ########################################
 
-      def create_head(options)
+      def create_head()
         # Atrributes for VNC job
         host = Socket.gethostname
         attropl = []
-        attropl << {name: PBS::ATTR_N, value: options[:name]}
-        attropl << {name: PBS::ATTR_l, resource: "walltime", value: options[:walltime]}
-        attropl << {name: PBS::ATTR_l, resource: "nodes", value: "1:ppn=1:#{options[:cluster]}"}
-        attropl << {name: PBS::ATTR_o, value: "#{host}:#{options[:outdir]}/$PBS_JOBID.output"}
+        attropl << {name: PBS::ATTR_N, value: name}
+        attropl << {name: PBS::ATTR_l, resource: "walltime", value: walltime}
+        attropl << {name: PBS::ATTR_l, resource: "nodes", value: "1:ppn=1:#{cluster}"}
+        attropl << {name: PBS::ATTR_o, value: "#{host}:#{outdir}/$PBS_JOBID.output"}
         attropl << {name: PBS::ATTR_j, value: "oe"}
         attropl << {name: PBS::ATTR_M, value: "noreply@osc.edu"}
         attropl << {name: PBS::ATTR_S, value: "/bin/bash"}
-        attropl << {name: PBS::ATTR_v, value: "OUTDIR=#{options[:outdir]},XSTARTUP_DIR=#{options[:xdir]}"}
+        attropl << {name: PBS::ATTR_v, value: "OUTDIR=#{outdir},XDIR=#{xdir},XSTARTUP=#{xstartup},XLOGOUT=#{xlogout}"}
         attropl
-      end
-
-      def submit(options)
-        # Connect to oxymoron cluster
-        c = PBS.pbs_connect(SERVER)
-
-        # Create PBS head
-        attropl = create_head(options)
-
-        # Submit new job
-        pbsid = PBS.pbs_submit(c, attropl, "#{BATCH_SCRIPT}", nil, nil)
-
-        # Disconnect after submission
-        PBS.pbs_disconnect(c)
-        
-        pbsid
       end
   end
 end

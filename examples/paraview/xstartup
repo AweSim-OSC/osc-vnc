@@ -1,6 +1,6 @@
 #!/bin/bash
 
-XSTARTUP_DIR=${XSTARTUP_DIR} /usr/bin/fvwm -f ${XSTARTUP_DIR}/fvwm/fvwmrc &
+XDIR=${XDIR} /usr/bin/fvwm -f ${XDIR}/fvwm/fvwmrc &
 
 
 . /etc/profile.d/modules-env.sh

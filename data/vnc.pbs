@@ -1,11 +1,10 @@
 # Use turbovnc
 module load turbovnc-1.2
 
-# requires these two env vars set: OUTDIR && XSTARTUP_DIR
+# requires these env vars: OUTDIR, XDIR, XSTARTUP, XLOGOUT
 
-XSTARTUP=${XSTARTUP_DIR}/xstartup
-XLOGOUT=${XSTARTUP_DIR}/xlogout
-
+XSTARTUP=${XDIR}/${XSTARTUP}
+XLOGOUT=${XDIR}/${XLOGOUT}
 OUTFILE=${OUTDIR}/${PBS_JOBID}.conn
 
 # Get local hostname
@@ -14,7 +13,7 @@ HOST=$(uname -n)
 # Clean up script run when "vncserver" finishes
 function clean_up {
     echo "Exiting..."
-    if [ -e "${XLOGOUT}" ]
+    if [ -f "${XLOGOUT}" ]
     then
         echo "Running logout script"
         . ${XLOGOUT}
