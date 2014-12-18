@@ -1,19 +1,25 @@
-## VNC Launch to Oxymoron
+# Osc::Vnc
+
+TODO: Write a gem description
+
+## Usage
 
 First install the gems if you haven't already:
 
-```
-bundle install --local
-```
+    $ bundle install --path vendor/bundle
 
 On a webservices node:
 
-```
-bundle exec ./vncsubmit [options] -x <xstartup_dir>
-```
+    $ bundle exec osc-vnc [options] -x <xstartup_dir>
 
 To get a list of arguments type:
 
-```
-bundle exec ./vncsubmit -h
-```
+    $ bundle exec osc-vnc -h
+
+## Contributing
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request

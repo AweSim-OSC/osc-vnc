@@ -1,2 +1,0 @@
-# Use PBS Ruby
-gem 'pbs', git: 'https://github.com/nickjer/pbs-ruby.git'
