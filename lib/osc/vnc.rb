@@ -3,42 +3,35 @@ require "osc/vnc/version"
 require "pbs"
 require "socket"
 
-# Path of script
-PATH = File.expand_path(File.dirname(__FILE__))
-
 module OSC
   class VNC
     # Default options
     DEFAULT = {name: 'vnc', cluster: 'glenn', outdir: ENV['PWD'], xdir: nil,
                xstartup: 'xstartup', xlogout: 'xlogout', walltime: '00:05:00'}
+    
+    # Oxymoron torque library
+    TORQUE_LIB = '/usr/local/torque-4.2.8/lib/libtorque.so'
+
+    # Oxymoron batch server
+    SERVER = 'oak-batch.osc.edu:17001'
+
+    # VNC batch script
+    BATCH_SCRIPT = File.expand_path(File.dirname(__FILE__)) + "/../../data/vnc.pbs"
 
     # Initialize PBS Ruby with special torque library for oxymoron cluster
-    PBS.init '/usr/local/torque-4.2.8/lib/libtorque.so'
+    PBS.init TORQUE_LIB
 
     def initialize(options)
       options = DEFAULT.merge(options)
 
-      # 'xstartup' directory is required
+      # xstartup directory is required
       raise ArgumentError, "Directory of the xstartup script is undefined" unless options[:xdir]
 
       # Make output directory if it doesn't already exist
       FileUtils.mkdir_p(options[:outdir])
 
-      # Connect to oxymoron cluster (note: must be on web services node)
-      server = 'oak-batch.osc.edu:17001'
-      c = PBS.pbs_connect(server)
-
-      # Create PBS head
-      attropl = create_head(options)
-
-      # Submit new job
-      pbsid = PBS.pbs_submit(c, attropl, "#{PATH}/../../data/vnc.pbs", nil, nil)
-
-      # Disconnect after submission
-      PBS.pbs_disconnect(c)
-
       # Output jobid to stdout
-      puts pbsid
+      puts submit(options)
     end
 
     ########################################
@@ -58,6 +51,22 @@ module OSC
         attropl << {name: PBS::ATTR_S, value: "/bin/bash"}
         attropl << {name: PBS::ATTR_v, value: "OUTDIR=#{options[:outdir]},XSTARTUP_DIR=#{options[:xdir]}"}
         attropl
+      end
+
+      def submit(options)
+        # Connect to oxymoron cluster
+        c = PBS.pbs_connect(SERVER)
+
+        # Create PBS head
+        attropl = create_head(options)
+
+        # Submit new job
+        pbsid = PBS.pbs_submit(c, attropl, "#{BATCH_SCRIPT}", nil, nil)
+
+        # Disconnect after submission
+        PBS.pbs_disconnect(c)
+        
+        pbsid
       end
   end
 end
