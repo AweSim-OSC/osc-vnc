@@ -1,5 +1,5 @@
 module OSC
-  module VNC
+  class VNC
     VERSION = "0.0.1"
   end
 end
