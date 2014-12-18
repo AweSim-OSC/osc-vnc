@@ -12,6 +12,10 @@ On a webservices node:
 
     $ bundle exec osc-vnc [options] -x <xstartup_dir>
 
+Example...
+
+    $ bundle exec osc-vnc -x examples/paraview/
+
 To get a list of arguments type:
 
     $ bundle exec osc-vnc -h
