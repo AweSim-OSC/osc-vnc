@@ -21,6 +21,7 @@ module OSC
     PBS.init TORQUE_LIB
 
     attr_accessor :name, :cluster, :outdir, :xdir, :xstartup, :xlogout, :walltime
+    attr_accessor :pbsid, :host, :port, :display, :password
 
     def initialize(options)
       @name = options[:name] || 'vnc'
@@ -46,11 +47,11 @@ module OSC
       # Connect to server and submit job with proper PBS attributes
       c = PBS.pbs_connect(SERVER)
       attropl = create_attr()
-      pbsid = PBS.pbs_submit(c, attropl, "#{BATCH_SCRIPT}", nil, nil)
+      self.pbsid = PBS.pbs_submit(c, attropl, "#{BATCH_SCRIPT}", nil, nil)
       PBS.pbs_disconnect(c)
 
-      # FIXME 
-      puts pbsid
+      # Get connection information
+      get_conn_info()
     end
 
     ########################################
@@ -70,6 +71,38 @@ module OSC
         attropl << {name: PBS::ATTR_S, value: "/bin/bash"}
         attropl << {name: PBS::ATTR_v, value: "OUTDIR=#{outdir},XDIR=#{xdir},XSTARTUP=#{xstartup},XLOGOUT=#{xlogout}"}
         attropl
+      end
+
+      def get_conn_info()
+        conn_file = "#{outdir}/#{pbsid}.conn"
+
+        # Wait until file is created
+        wait_for_file conn_file
+
+        File.open(conn_file) { |f|
+          contents = f.read
+
+          # Get connection info
+          @host = /^Host: (.*)$/.match(contents)[1]
+          @port = /^Port: (.*)$/.match(contents)[1]
+          @display = /^Display: (.*)$/.match(contents)[1]
+          @password = /^Pass: (.*)$/.match(contents)[1]
+        }
+      end
+
+      def wait_for_file(file)
+        sleep_time = 0.1
+        max_time = 30
+        max_count = (max_time / sleep_time).ceil
+
+        count = 0
+        until File.exist?(file) || count == max_count
+          count += 1
+          sleep(sleep_time)
+          `ls` #FIXME: dirty trick to flush file system cache
+        end
+
+        raise RuntimeError, "connection file was never created" if count == max_count
       end
   end
 end
