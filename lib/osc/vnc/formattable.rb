@@ -2,6 +2,7 @@ module OSC
   module Formattable
     def to_string()
       <<-EOF.gsub /^\s+/, ''
+        PBSid: #{pbsid}
         Host: #{host}
         Port: #{port}
         Pass: #{password}
