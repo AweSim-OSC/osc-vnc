@@ -94,6 +94,12 @@ module OSC
           @password = /^Pass: (.*)$/.match(contents)[1]
         }
 
+        # Error checking
+        raise RuntimeError, "host not specified by batch job" unless host
+        raise RuntimeError, "port not specified by batch job" unless port
+        raise RuntimeError, "display not specified by batch job" unless display
+        raise RuntimeError, "password not specified by batch job" unless password
+
         # Remove connection info file when done
         File.delete(conn_file)
       end
