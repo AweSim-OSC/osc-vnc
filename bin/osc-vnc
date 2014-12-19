@@ -64,4 +64,4 @@ end
 # Begin submission of batch job
 ######################################
 
-conn = OSC::VNC.new(options).run
+puts OSC::VNC.new(options).run.to_string

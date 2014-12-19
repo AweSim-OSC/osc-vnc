@@ -1,4 +1,5 @@
 require "osc/vnc/version"
+require "osc/vnc/formattable"
 
 require "pbs"
 require "socket"
@@ -19,6 +20,8 @@ module OSC
 
     # Initialize PBS Ruby with special torque library for oxymoron cluster
     PBS.init TORQUE_LIB
+
+    include OSC::Formattable
 
     attr_accessor :name, :cluster, :outdir, :xdir, :xstartup, :xlogout, :walltime
     attr_accessor :pbsid, :host, :port, :display, :password
@@ -52,6 +55,8 @@ module OSC
 
       # Get connection information
       get_conn_info()
+
+      self
     end
 
     ########################################
