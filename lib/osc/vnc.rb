@@ -43,16 +43,10 @@ module OSC
       # Make output directory if it doesn't already exist
       FileUtils.mkdir_p(outdir)
 
-      # Connect to oxymoron cluster
+      # Connect to server and submit job with proper PBS attributes
       c = PBS.pbs_connect(SERVER)
-
-      # Create PBS head
-      attropl = create_head()
-
-      # Submit new job
+      attropl = create_attr()
       pbsid = PBS.pbs_submit(c, attropl, "#{BATCH_SCRIPT}", nil, nil)
-
-      # Disconnect after submission
       PBS.pbs_disconnect(c)
 
       # FIXME 
@@ -63,8 +57,8 @@ module OSC
     # Private methods
     ########################################
 
-      def create_head()
-        # Atrributes for VNC job
+      def create_attr()
+        # PBS attributes for a VNC job
         host = Socket.gethostname
         attropl = []
         attropl << {name: PBS::ATTR_N, value: name}
