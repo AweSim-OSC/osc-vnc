@@ -93,6 +93,9 @@ module OSC
           @display = /^Display: (.*)$/.match(contents)[1]
           @password = /^Pass: (.*)$/.match(contents)[1]
         }
+
+        # Remove connection info file when done
+        File.delete(conn_file)
       end
 
       def wait_for_file(file)
