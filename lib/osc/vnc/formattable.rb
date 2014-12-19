@@ -36,5 +36,9 @@ module OSC
         </jnlp>
       EOF
     end
+
+    def to_url()
+      "http://#{host}:#{port}/vnc_auto.html?password=#{password}"
+    end
   end
 end
