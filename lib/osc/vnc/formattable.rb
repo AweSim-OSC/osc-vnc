@@ -10,7 +10,7 @@ module OSC::VNC::Formattable
   end
 
   def to_jnlp()
-    <<-EOF.gsub /^\s{8}/, ''
+    <<-EOF.gsub /^\s{6}/, ''
       <?xml version="1.0" encoding="UTF-8"?>
       <jnlp spec="1.0+" codebase="http://mirror.osc.edu/mirror" >
           <information>
