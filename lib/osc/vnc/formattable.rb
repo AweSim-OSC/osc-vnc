@@ -1,4 +1,6 @@
 module OSC::VNC::Formattable
+
+  # Output as simple string
   def to_string()
     <<-EOF.gsub /^\s+/, ''
       PBSid: #{pbsid}
@@ -9,6 +11,7 @@ module OSC::VNC::Formattable
     EOF
   end
 
+  # Output in Java jnlp format
   def to_jnlp()
     <<-EOF.gsub /^\s{6}/, ''
       <?xml version="1.0" encoding="UTF-8"?>
@@ -37,6 +40,7 @@ module OSC::VNC::Formattable
     EOF
   end
 
+  # Output as a URL --- future placeholder
   def to_url()
     "http://#{host}:#{port}/vnc_auto.html?password=#{password}"
   end
