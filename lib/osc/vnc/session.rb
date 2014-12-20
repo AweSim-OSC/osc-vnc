@@ -74,17 +74,11 @@ class OSC::VNC::Session
         contents = f.read
 
         # Get connection info
-        @host = /^Host: (.*)$/.match(contents)[1]
-        @port = /^Port: (.*)$/.match(contents)[1]
-        @display = /^Display: (.*)$/.match(contents)[1]
-        @password = /^Pass: (.*)$/.match(contents)[1]
+        {:@host => 'Host', :@port => 'Port', :@display => 'Display', :@password => 'Pass'}.each do |key, value|
+          instance_variable_set(key, /^#{value}: (.*)$/.match(contents)[1])
+          raise RuntimeError, "#{key} not specified by batch job" unless instance_variable_get(key)
+        end
       }
-
-      # Error checking
-      raise RuntimeError, "host not specified by batch job" unless host
-      raise RuntimeError, "port not specified by batch job" unless port
-      raise RuntimeError, "display not specified by batch job" unless display
-      raise RuntimeError, "password not specified by batch job" unless password
 
       # Remove connection info file when done
       File.delete(conn_file)
