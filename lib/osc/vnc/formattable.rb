@@ -1,16 +1,5 @@
 module OSC::VNC::Formattable
 
-  # Output as simple string
-  def to_string()
-    <<-EOF.gsub /^\s+/, ''
-      PBSid: #{pbsid}
-      Host: #{host}
-      Port: #{port}
-      Pass: #{password}
-      Display: #{display}
-    EOF
-  end
-
   # Output in Java jnlp format
   def to_jnlp()
     <<-EOF.gsub /^\s{6}/, ''

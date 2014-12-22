@@ -45,6 +45,17 @@ class OSC::VNC::Session
     self
   end
 
+  def to_s()
+    # Output as string
+    <<-EOF.gsub /^\s+/, ''
+      PBSid: #{pbsid}
+      Host: #{host}
+      Port: #{port}
+      Pass: #{password}
+      Display: #{display}
+    EOF
+  end
+
   ########################################
   # Private methods
   ########################################
