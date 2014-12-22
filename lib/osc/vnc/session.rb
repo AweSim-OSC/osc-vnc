@@ -20,16 +20,16 @@ class OSC::VNC::Session
     @xstartup = options[:xstartup] || 'xstartup'
     @xlogout = options[:xlogout] || 'xlogout'
     @walltime = options[:walltime] || '00:05:00'
+  end
 
+  def run()
     # Check for errors
     raise ArgumentError, "xstartup directory is undefined" unless xdir
     raise ArgumentError, "xstartup script is not found" unless File.file?("#{xdir}/#{xstartup}")
     raise ArgumentError, "output directory is a file" if File.file?(outdir)
     raise ArgumentError, "invalid cluster system" unless SYSTEMS.include?(cluster)
     raise ArugmentError, "invalid walltime" unless /^\d\d:\d\d:\d\d$/.match(walltime)
-  end
 
-  def run()
     # Make output directory if it doesn't already exist
     FileUtils.mkdir_p(outdir)
 
