@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Library to create VNC jobs with HPC resources}
   spec.summary       = %q{This library submits VNC jobs to the Oxymoron cluster as well as obtains the connection information required for a connection to take place with a VNC client.}
   spec.homepage      = "http://www.awesim.org"
-  spec.license       = "MIT"
+  # spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
