@@ -29,8 +29,4 @@ module OSC::VNC::Formattable
     EOF
   end
 
-  # Output as a URL --- future placeholder
-  def to_url()
-    "http://#{host}:#{port}/vnc_auto.html?password=#{password}"
-  end
 end

@@ -56,6 +56,11 @@ class OSC::VNC::Session
     EOF
   end
 
+  def url()
+    # Output as a URL --- future placeholder
+    "http://#{host}:#{port}/vnc_auto.html?password=#{password}"
+  end
+
   ########################################
   # Private methods
   ########################################
