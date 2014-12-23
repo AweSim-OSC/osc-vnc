@@ -46,6 +46,11 @@ OptionParser.new do |opts|
     puts opts
     exit
   end
+
+  opts.on_tail("--version", "Show version") do
+    puts OSC::VNC::VERSION
+    exit
+  end
 end.parse!
 
 # Make sure xstartup directory exists
