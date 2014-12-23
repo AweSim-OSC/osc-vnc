@@ -1,4 +1,5 @@
 require 'osc/vnc/formattable'
+require 'fileutils'
 
 class OSC::VNC::Session
   # Systems
