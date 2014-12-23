@@ -12,7 +12,7 @@ options = {:name => 'vnc', :cluster => 'glenn', :outdir => ENV['PWD'], :xdir => 
 
 # Parser
 OptionParser.new do |opts|
-  opts.banner = "Usage: osc-vnc [options]"
+  opts.banner = "Usage: #{File.basename(__FILE__)} [options]"
 
   opts.separator ""
   opts.separator "Specific options:"
@@ -48,7 +48,7 @@ OptionParser.new do |opts|
   end
 
   opts.on_tail("--version", "Show version") do
-    puts OSC::VNC::VERSION
+    puts "#{File.basename(__FILE__)} version #{OSC::VNC::VERSION}"
     exit
   end
 end.parse!
