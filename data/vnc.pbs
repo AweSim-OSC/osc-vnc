@@ -69,7 +69,10 @@ echo "Pass: ${PASSWORD}" >> ${OUTFILE}
 echo "Display: ${DISPLAY_PORT}" >> ${OUTFILE}
 
 # Wait for vnc server process to finish
-while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
+if [ ! -z "${VNC_PID}" ]
+then
+    while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
+fi
 
 # Exit cleanly
 exit
