@@ -102,7 +102,7 @@ class OSC::VNC::Session
     end
 
     def wait_for_file(file)
-      sleep_time = 0.1
+      sleep_time = 0.5
       max_time = 30
       max_count = (max_time / sleep_time).ceil
 
