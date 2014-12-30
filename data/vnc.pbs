@@ -27,19 +27,21 @@ trap clean_up TERM EXIT
 # If two servers start simultaneously one will fail, loop until it succeeds
 i=0
 while [[ -z "${VNC_PID}" && "$i" -lt 30 ]]; do
+    # Clean up any failed vnc sessions that didn't clean themselves up
+    vncserver -list | awk '/^:/{display[$1] = $2} END{for(key in display) { if( system( "[ ! -e /proc/" display[key] " ]" ) == 0 ) { system( "vncserver -kill " key ) } }}'
+    # Run the vncserver
     VNC_OUT=$(vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -nopam -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -log ${LOGFILE} -xstartup ${XSTARTUP} 2>&1)
-    VNC_PID=$(pgrep -s 0 Xvnc)
-    i=$((i+1))
+    VNC_PID=$(pgrep -s 0 Xvnc)  # Get process id
     # VNC couldn't find display so died
     if [ -z "${VNC_PID}" ]; then
-        # Sleep between 0 and 1 seconds
-        sleep 0.$(($RANDOM % 100))s
+        sleep 0.$(($RANDOM % 100))s # Sleep between 0-1 seconds
     fi
     # Sometimes VNC will hang if it fails to find working display
     if [[ ! -z "${VNC_PID}" && "${VNC_OUT}" == *"Fatal server error"* ]]; then
         kill -9 ${VNC_PID}
         unset VNC_PID
     fi
+    i=$((i+1))  # increment counter
 done
 echo "${VNC_OUT}"
 
