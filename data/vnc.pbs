@@ -29,7 +29,7 @@ trap clean_up TERM EXIT
 #       trying until it succeeds
 i=0
 while [[ -z "${VNC_PID}" && "$i" -lt 30 ]]; do
-    VNC_OUT=$(vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -nopam -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -xstartup ${XSTARTUP} 2>&1)
+    VNC_OUT=$(vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -nopam -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -log ${OUTDIR}/${PBS_JOBID}.log -xstartup ${XSTARTUP} 2>&1)
     VNC_PID=$(pgrep -s 0 Xvnc)
     i=$((i+1))
     # VNC couldn't find display so died
