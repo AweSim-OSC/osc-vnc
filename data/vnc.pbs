@@ -25,9 +25,30 @@ trap clean_up TERM EXIT
 # -idletimeout = max time server will run without user before dying
 # -novncauth = vncserver enables all three auth types by default so disable the one that
 #       expects a password file to be created so it runs even if no passwd file exists
-VNC_OUT=$(vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -nopam -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -xstartup ${XSTARTUP} 2>&1)
+# Note: If two servers start simultaneously one will fail, so keep
+#       trying until it succeeds
+i=0
+while [[ -z "${VNC_PID}" && "$i" -lt 30 ]]; do
+    VNC_OUT=$(vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -nopam -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -xstartup ${XSTARTUP} 2>&1)
+    VNC_PID=$(pgrep -s 0 Xvnc)
+    i=$((i+1))
+    # VNC couldn't find display so died
+    if [ -z "${VNC_PID}" ]; then
+        # Sleep between 0 and 1 seconds
+        sleep 0.$(($RANDOM % 100))s
+    fi
+    # Sometimes VNC will hang if it fails to find working display
+    if [[ ! -z "${VNC_PID}" && "${VNC_OUT}" == *"Fatal server error"* ]]; then
+        kill -9 ${VNC_PID}
+        unset VNC_PID
+    fi
+done
 echo "${VNC_OUT}"
-VNC_PID=$(pgrep -s 0 Xvnc)
+
+# Make sure it is running otherwise exit
+if [ -z "${VNC_PID}" ]; then
+    exit 1
+fi
 
 # Parse output for ports
 DISPLAY_PORT=$(echo "${VNC_OUT}" | awk -F':' '/^Desktop/{print $NF}')
@@ -69,10 +90,7 @@ echo "Pass: ${PASSWORD}" >> ${OUTFILE}
 echo "Display: ${DISPLAY_PORT}" >> ${OUTFILE}
 
 # Wait for vnc server process to finish
-if [ ! -z "${VNC_PID}" ]
-then
-    while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
-fi
+while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
 
 # Exit cleanly
-exit
+exit 0
