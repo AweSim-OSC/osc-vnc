@@ -6,6 +6,7 @@ module load turbovnc-1.2
 XSTARTUP=${XDIR}/${XSTARTUP}
 XLOGOUT=${XDIR}/${XLOGOUT}
 OUTFILE=${OUTDIR}/${PBS_JOBID}.conn
+LOGFILE=${OUTDIR}/${PBS_JOBID}.log
 
 # Get local hostname
 HOST=$(uname -n)
@@ -13,8 +14,7 @@ HOST=$(uname -n)
 # Clean up script run when "vncserver" finishes
 function clean_up {
     echo "Exiting..."
-    if [ -f "${XLOGOUT}" ]
-    then
+    if [ -f "${XLOGOUT}" ]; then
         echo "Running logout script"
         . ${XLOGOUT}
     fi
@@ -23,13 +23,11 @@ trap clean_up TERM EXIT
 
 # Start up vnc server and create output
 # -idletimeout = max time server will run without user before dying
-# -novncauth = vncserver enables all three auth types by default so disable the one that
-#       expects a password file to be created so it runs even if no passwd file exists
-# Note: If two servers start simultaneously one will fail, so keep
-#       trying until it succeeds
+# By default vncserver runs all 3 auth's. We turn off pam and vncauth.
+# If two servers start simultaneously one will fail, loop until it succeeds
 i=0
 while [[ -z "${VNC_PID}" && "$i" -lt 30 ]]; do
-    VNC_OUT=$(vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -nopam -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -log ${OUTDIR}/${PBS_JOBID}.log -xstartup ${XSTARTUP} 2>&1)
+    VNC_OUT=$(vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -nopam -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -log ${LOGFILE} -xstartup ${XSTARTUP} 2>&1)
     VNC_PID=$(pgrep -s 0 Xvnc)
     i=$((i+1))
     # VNC couldn't find display so died
