@@ -10,17 +10,19 @@ class OSC::VNC::Session
 
   include OSC::VNC::Formattable
 
-  attr_accessor :name, :cluster, :outdir, :xdir, :xstartup, :xlogout, :walltime
+  attr_accessor :name, :cluster, :outdir, :xdir, :xstartup, :xlogout, :walltime, :extra_options
   attr_accessor :pbsid, :host, :port, :display, :password
 
   def initialize(options)
-    @name = options[:name] || 'vnc'
-    @cluster = options[:cluster] || 'glenn'
-    @outdir = options[:outdir] || ENV['PWD']
-    @xdir = options[:xdir]
-    @xstartup = options[:xstartup] || 'xstartup'
-    @xlogout = options[:xlogout] || 'xlogout'
-    @walltime = options[:walltime] || '00:05:00'
+    @name = options.delete(:name) { 'vnc' }
+    @cluster = options.delete(:cluster) { 'glenn' }
+    @outdir = options.delete(:outdir) { ENV['PWD'] }
+    @xdir = options.delete(:xdir)
+    @xstartup = options.delete(:xstartup) { 'xstartup' }
+    @xlogout = options.delete(:xlogout) { 'xlogout' }
+    @walltime = options.delete(:walltime) { '00:05:00' }
+
+    @extra_options = options
   end
 
   def run()
@@ -67,6 +69,9 @@ class OSC::VNC::Session
   ########################################
 
     def create_attr()
+      # Convert extra options to comma delimited environment variable list
+      extra_vars = extra_options.map { |k,v| "#{k.upcase}=#{v}" }.join(",")
+
       # PBS attributes for a VNC job
       host = Socket.gethostname
       attropl = []
@@ -77,7 +82,7 @@ class OSC::VNC::Session
       attropl << {name: PBS::ATTR_j, value: "oe"}
       attropl << {name: PBS::ATTR_M, value: "noreply@osc.edu"}
       attropl << {name: PBS::ATTR_S, value: "/bin/bash"}
-      attropl << {name: PBS::ATTR_v, value: "OUTDIR=#{outdir},XDIR=#{xdir},XSTARTUP=#{xstartup},XLOGOUT=#{xlogout}"}
+      attropl << {name: PBS::ATTR_v, value: "OUTDIR=#{outdir},XDIR=#{xdir},XSTARTUP=#{xstartup},XLOGOUT=#{xlogout},#{extra_vars}"}
       attropl
     end
 
