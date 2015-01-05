@@ -10,28 +10,24 @@ class OSC::VNC::Session
 
   include OSC::VNC::Formattable
 
-  attr_accessor :name, :cluster, :outdir, :xdir, :xstartup, :xlogout, :walltime, :extra_options
+  attr_accessor :name, :cluster, :walltime
+  attr_accessor :outdir, :xdir, :xstartup, :xlogout, :env_vars
   attr_accessor :pbsid, :host, :port, :display, :password
 
   def initialize(options)
-    @name = options.delete(:name) { 'vnc' }
-    @cluster = options.delete(:cluster) { 'glenn' }
-    @outdir = options.delete(:outdir) { ENV['PWD'] }
-    @xdir = options.delete(:xdir)
-    @xstartup = options.delete(:xstartup) { 'xstartup' }
-    @xlogout = options.delete(:xlogout) { 'xlogout' }
-    @walltime = options.delete(:walltime) { '00:05:00' }
-
-    @extra_options = options
+    @name = options[:name] || 'vnc'
+    @cluster = options[:cluster] || 'glenn'
+    @walltime = options[:walltime] || '00:05:00'
+    @outdir = options[:outdir] || ENV['PWD']
+    @xdir = options[:xdir]
+    @xstartup = options[:xstartup] || 'xstartup'
+    @xlogout = options[:xlogout] || 'xlogout'
+    @env_vars = options[:env_vars] || {}
   end
 
   def run()
     # Check for errors
-    raise ArgumentError, "xstartup directory is undefined" unless xdir
-    raise ArgumentError, "xstartup script is not found" unless File.file?("#{xdir}/#{xstartup}")
-    raise ArgumentError, "output directory is a file" if File.file?(outdir)
-    raise ArgumentError, "invalid cluster system" unless SYSTEMS.include?(cluster)
-    raise ArugmentError, "invalid walltime" unless /^\d\d:\d\d:\d\d$/.match(walltime)
+    check_arg_errors
 
     # Make output directory if it doesn't already exist
     FileUtils.mkdir_p(outdir)
@@ -68,9 +64,23 @@ class OSC::VNC::Session
   # Private methods
   ########################################
 
+    def check_arg_errors()
+      # Check for errors with any of the user supplied arguments
+      raise ArgumentError, "xstartup directory is undefined" unless xdir
+      raise ArgumentError, "xstartup script is not found" unless File.file?("#{xdir}/#{xstartup}")
+      raise ArgumentError, "output directory is a file" if File.file?(outdir)
+      raise ArgumentError, "invalid cluster system" unless SYSTEMS.include?(cluster)
+      raise ArugmentError, "invalid walltime" unless /^\d\d:\d\d:\d\d$/.match(walltime)
+
+      # Be careful with environment variables, they may override important variables
+      %i(outdir xdir xstartup xlogout).each do |key|
+        raise ArgumentError, "duplication in #{key} argument" if env_vars.has_key?(key)
+      end
+    end
+
     def create_attr()
       # Convert extra options to comma delimited environment variable list
-      extra_vars = extra_options.map { |k,v| "#{k.upcase}=#{v}" }.join(",")
+      extra_vars = env_vars.map { |k,v| "#{k.upcase}=#{v}" }.join(",")
 
       # PBS attributes for a VNC job
       host = Socket.gethostname
