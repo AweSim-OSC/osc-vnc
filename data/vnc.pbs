@@ -1,5 +1,7 @@
 # Use turbovnc
-module load turbovnc-1.2
+# FIXME: This will fail for Oakley
+VNC_MODULE=${VNC_MODULE:-"turbovnc-1.2"}
+module load ${VNC_MODULE}
 
 # requires these env vars: OUTDIR, XDIR, XSTARTUP, XLOGOUT
 
@@ -21,6 +23,11 @@ function clean_up {
 }
 trap clean_up TERM EXIT
 
+# Set defaults unless already set
+VNC_GEOM=${VNC_GEOM:-"1024x768"}
+VNC_DPI=${VNC_DPI:-"96"}
+VNC_FONTS=${VNC_FONTS:-"/usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1"}
+
 # Start up vnc server and create output
 # -idletimeout = max time server will run without user before dying
 # By default vncserver runs all 3 auth's. We turn off pam and vncauth.
@@ -30,7 +37,7 @@ while [[ -z "${VNC_PID}" && "$i" -lt 30 ]]; do
     # Clean up any failed vnc sessions that didn't clean themselves up
     vncserver -list | awk '/^:/{display[$1] = $2} END{for(key in display) { if( system( "[ ! -e /proc/" display[key] " ]" ) == 0 ) { system( "vncserver -kill " key ) } }}'
     # Run the vncserver
-    VNC_OUT=$(vncserver -geometry 1024x768 -dpi 96 -otp -novncauth -nopam -idletimeout 60 -nohttpd -fp /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1 -log ${LOGFILE} -xstartup ${XSTARTUP} 2>&1)
+    VNC_OUT=$(vncserver -geometry ${VNC_GEOM} -dpi ${VNC_DPI} -fp ${VNC_FONTS} -otp -novncauth -nopam -nohttpd -idletimeout 60 -log ${LOGFILE} -xstartup ${XSTARTUP} ${VNC_ARGS} 2>&1)
     VNC_PID=$(pgrep -s 0 Xvnc)  # Get process id
     # VNC couldn't find display so died
     if [ -z "${VNC_PID}" ]; then
@@ -69,7 +76,7 @@ PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
 #
 # 1. we grep the output of /sbin/ip a s to 192.148.0.0/16 to get 192.148.248.70/24, getting the first match only to ignore 192.148.248.255
 #
-#    7: eth0.70@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP 
+#    7: eth0.70@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
 #        inet 192.148.248.75/24 brd 192.148.248.255 scope global eth0.70
 #
 # 2. we use this as argument to dig i.e. dig +short -x 192.148.248.70
@@ -77,6 +84,7 @@ PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
 #     vis033.osc.edu.
 #
 # 3. we get rid of the ending .
+# FIXME: Was this tested on Oakley vis nodes?
 function vis_hostname_alias {
     /sbin/ip a s to 192.148.0.0/16 | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -n1 | xargs dig +short -x | sed 's/\.$//'
 }
