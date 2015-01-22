@@ -22,12 +22,19 @@ class OSC::VNC::Session
   attr_accessor :opts
   attr_accessor :pbsid, :host, :port, :display, :password
 
+  # Any options passed to the constructor become environment
+  # variables in the batch script
+  # Example:
+  #   Session.new(cluster: 'oakley', xdir: '/path/to/xstartup', module: 'comsol/5.3')
+  #   becomes in the batch script
+  #   => $CLUSTER, $XDIR, $MODULE, and any other defaults defined above
   def initialize(options)
     @opts = DEFAULT.merge(options)
   end
 
+  # Run the VNC session using Oxymoron batch queue
   def run()
-    # Check for errors
+    # Check for errors in user supplied options
     check_arg_errors
 
     # Make output directory if it doesn't already exist
