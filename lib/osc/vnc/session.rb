@@ -10,19 +10,20 @@ class OSC::VNC::Session
 
   include OSC::VNC::Formattable
 
-  attr_accessor :name, :cluster, :walltime
-  attr_accessor :outdir, :xdir, :xstartup, :xlogout, :env_vars
+  DEFAULT = {
+    name: 'vnc',
+    cluster: 'glenn',
+    walltime: '00:05:00',
+    outdir: ENV['PWD'],
+    xstartup: 'xstartup',
+    xlogout: 'xlogout'
+  }
+
+  attr_accessor :opts
   attr_accessor :pbsid, :host, :port, :display, :password
 
   def initialize(options)
-    @name = options[:name] || 'vnc'
-    @cluster = options[:cluster] || 'glenn'
-    @walltime = options[:walltime] || '00:05:00'
-    @outdir = options[:outdir] || ENV['PWD']
-    @xdir = options[:xdir]
-    @xstartup = options[:xstartup] || 'xstartup'
-    @xlogout = options[:xlogout] || 'xlogout'
-    @env_vars = options[:env_vars] || {}
+    @opts = DEFAULT.merge(options)
   end
 
   def run()
@@ -30,7 +31,7 @@ class OSC::VNC::Session
     check_arg_errors
 
     # Make output directory if it doesn't already exist
-    FileUtils.mkdir_p(outdir)
+    FileUtils.mkdir_p(opts[:outdir])
 
     # Connect to server and submit job with proper PBS attributes
     c = PBS.pbs_connect(OSC::VNC::SERVER)
@@ -66,38 +67,33 @@ class OSC::VNC::Session
 
     def check_arg_errors()
       # Check for errors with any of the user supplied arguments
-      raise ArgumentError, "xstartup directory is undefined" unless xdir
-      raise ArgumentError, "xstartup script is not found" unless File.file?("#{xdir}/#{xstartup}")
-      raise ArgumentError, "output directory is a file" if File.file?(outdir)
-      raise ArgumentError, "invalid cluster system" unless SYSTEMS.include?(cluster)
-      raise ArugmentError, "invalid walltime" unless /^\d\d:\d\d:\d\d$/.match(walltime)
-
-      # Be careful with environment variables, they may override important variables
-      %i(outdir xdir xstartup xlogout).each do |key|
-        raise ArgumentError, "duplication in #{key} argument" if env_vars.has_key?(key)
-      end
+      raise ArgumentError, "xstartup directory is undefined" unless opts[:xdir]
+      raise ArgumentError, "xstartup script is not found" unless File.file?("#{opts[:xdir]}/#{opts[:xstartup]}")
+      raise ArgumentError, "output directory is a file" if File.file?(opts[:outdir])
+      raise ArgumentError, "invalid cluster system" unless SYSTEMS.include?(opts[:cluster])
+      raise ArugmentError, "invalid walltime" unless /^\d\d:\d\d:\d\d$/.match(opts[:walltime])
     end
 
     def create_attr()
       # Convert extra options to comma delimited environment variable list
-      extra_vars = env_vars.map { |k,v| "#{k.upcase}=#{v}" }.join(",")
+      pbs_vars = opts.map { |k,v| "#{k.upcase}=#{v}" }.join(",")
 
       # PBS attributes for a VNC job
       host = Socket.gethostname
       attropl = []
-      attropl << {name: PBS::ATTR_N, value: name}
-      attropl << {name: PBS::ATTR_l, resource: "walltime", value: walltime}
-      attropl << {name: PBS::ATTR_l, resource: "nodes", value: "1:ppn=1:#{cluster}"}
-      attropl << {name: PBS::ATTR_o, value: "#{host}:#{outdir}/$PBS_JOBID.output"}
+      attropl << {name: PBS::ATTR_N, value: opts[:name]}
+      attropl << {name: PBS::ATTR_l, resource: "walltime", value: opts[:walltime]}
+      attropl << {name: PBS::ATTR_l, resource: "nodes", value: "1:ppn=1:#{opts[:cluster]}"}
+      attropl << {name: PBS::ATTR_o, value: "#{host}:#{opts[:outdir]}/$PBS_JOBID.output"}
       attropl << {name: PBS::ATTR_j, value: "oe"}
       attropl << {name: PBS::ATTR_M, value: "noreply@osc.edu"}
       attropl << {name: PBS::ATTR_S, value: "/bin/bash"}
-      attropl << {name: PBS::ATTR_v, value: "OUTDIR=#{outdir},XDIR=#{xdir},XSTARTUP=#{xstartup},XLOGOUT=#{xlogout},#{extra_vars}"}
+      attropl << {name: PBS::ATTR_v, value: "#{pbs_vars}"}
       attropl
     end
 
     def get_conn_info()
-      conn_file = "#{outdir}/#{pbsid}.conn"
+      conn_file = "#{opts[:outdir]}/#{pbsid}.conn"
 
       # Wait until file is created
       wait_for_file conn_file
