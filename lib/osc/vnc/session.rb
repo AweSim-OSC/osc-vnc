@@ -15,6 +15,7 @@ class OSC::VNC::Session
     cluster: 'glenn',
     walltime: '00:05:00',
     outdir: ENV['PWD'],
+    xdir: nil,
     xstartup: 'xstartup',
     xlogout: 'xlogout'
   }
