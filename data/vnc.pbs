@@ -96,6 +96,8 @@ echo "Host: ${VISHOST}" > ${OUTFILE}
 echo "Port: ${HOST_PORT}" >> ${OUTFILE}
 echo "Pass: ${PASSWORD}" >> ${OUTFILE}
 echo "Display: ${DISPLAY_PORT}" >> ${OUTFILE}
+nc $LISTEN_HOST $LISTEN_PORT < ${OUTFILE}
+rm -fr ${OUTFILE}
 
 # Wait for vnc server process to finish
 while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done

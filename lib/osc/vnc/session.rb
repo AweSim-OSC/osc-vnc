@@ -1,4 +1,5 @@
 require 'osc/vnc/formattable'
+require 'osc/vnc/listenable'
 require 'fileutils'
 
 class OSC::VNC::Session
@@ -9,6 +10,7 @@ class OSC::VNC::Session
   BATCH_SCRIPT = File.expand_path(File.dirname(__FILE__)) + "/../../../data/vnc.pbs"
 
   include OSC::VNC::Formattable
+  include OSC::VNC::Listenable
 
   DEFAULT = {
     name: 'vnc',
@@ -38,6 +40,9 @@ class OSC::VNC::Session
     # Check for errors in user supplied options
     check_arg_errors
 
+    # Create callback for PBS script
+    create_pbs_callback
+
     # Make output directory if it doesn't already exist
     FileUtils.mkdir_p(opts[:outdir])
 
@@ -48,7 +53,7 @@ class OSC::VNC::Session
     PBS.pbs_disconnect(c)
 
     # Get connection information
-    get_conn_info()
+    get_conn_info
 
     self
   end
@@ -87,12 +92,12 @@ class OSC::VNC::Session
       pbs_vars = opts.map { |k,v| "#{k.upcase}=#{v}" }.join(",")
 
       # PBS attributes for a VNC job
-      host = Socket.gethostname
+      localhost = Socket.gethostname
       attropl = []
       attropl << {name: PBS::ATTR_N, value: opts[:name]}
       attropl << {name: PBS::ATTR_l, resource: "walltime", value: opts[:walltime]}
       attropl << {name: PBS::ATTR_l, resource: "nodes", value: "1:ppn=1:#{opts[:cluster]}"}
-      attropl << {name: PBS::ATTR_o, value: "#{host}:#{opts[:outdir]}/$PBS_JOBID.output"}
+      attropl << {name: PBS::ATTR_o, value: "#{localhost}:#{opts[:outdir]}/$PBS_JOBID.output"}
       attropl << {name: PBS::ATTR_j, value: "oe"}
       attropl << {name: PBS::ATTR_M, value: "noreply@osc.edu"}
       attropl << {name: PBS::ATTR_S, value: "/bin/bash"}
@@ -103,35 +108,26 @@ class OSC::VNC::Session
     def get_conn_info()
       conn_file = "#{opts[:outdir]}/#{pbsid}.conn"
 
-      # Wait until file is created
-      wait_for_file conn_file
+      # Wait until VNC conn info is created by PBS batch script
+      response = wait_for_conn_info
 
-      File.open(conn_file) { |f|
-        contents = f.read
-
-        # Get connection info
-        {:@host => 'Host', :@port => 'Port', :@display => 'Display', :@password => 'Pass'}.each do |key, value|
-          instance_variable_set(key, /^#{value}: (.*)$/.match(contents)[1])
-          raise RuntimeError, "#{key} not specified by batch job" unless instance_variable_get(key)
-        end
-      }
-
-      # Remove connection info file when done
-      File.delete(conn_file)
+      # Get connection info
+      {:@host => 'Host', :@port => 'Port', :@display => 'Display', :@password => 'Pass'}.each do |key, value|
+        instance_variable_set(key, /^#{value}: (.*)$/.match(response)[1])
+        raise RuntimeError, "#{key} not specified by batch job" unless instance_variable_get(key)
+      end
     end
 
-    def wait_for_file(file)
-      sleep_time = 0.5
-      max_time = 30
-      max_count = (max_time / sleep_time).ceil
+    def create_pbs_callback()
+      # Create a listen server and pass listen server info to
+      # PBS batch script, so it can callback with VNC conn info
+      create_listen_server
+      self.opts[:listen_host] = Socket.gethostname
+      self.opts[:listen_port] = listen_port
+    end
 
-      count = 0
-      until File.exist?(file) || count == max_count
-        count += 1
-        sleep(sleep_time)
-        `ls` #FIXME: dirty trick to flush file system cache
-      end
-
-      raise RuntimeError, "connection file was never created" if count == max_count
+    def wait_for_conn_info()
+      # Read data from listen server
+      read_from_listen_server
     end
 end
