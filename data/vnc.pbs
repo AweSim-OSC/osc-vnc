@@ -13,9 +13,12 @@ LOGFILE=${OUTDIR}/${PBS_JOBID}.log
 # Get local hostname
 HOST=$(uname -n)
 
-# Clean up script run when "vncserver" finishes
+# Clean up script run when "vncserver" finishes or dies prematurely
 function clean_up {
     echo "Exiting..."
+    # Better safe than sorry when cleaning up vnc server
+    vncserver -kill :${DISPLAY_PORT}
+    # Run developer cleanup script
     if [ -f "${XLOGOUT}" ]; then
         echo "Running logout script"
         . ${XLOGOUT}
