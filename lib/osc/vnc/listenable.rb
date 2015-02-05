@@ -6,7 +6,6 @@ module OSC::VNC::Listenable
     # Listen on random port
     @listen_port = get_port
     begin
-      puts @listen_port
       @listen_server = TCPServer.new(@listen_port)
     rescue Errno::EADDRINUSE
       @listen_port = get_port
