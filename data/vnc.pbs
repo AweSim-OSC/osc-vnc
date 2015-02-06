@@ -1,6 +1,10 @@
 # Use turbovnc
-# FIXME: This will fail for Oakley
-VNC_MODULE=${VNC_MODULE:-"turbovnc-1.2"}
+if [ "${CLUSTER}" == "glenn"]; then
+  VNC_MODULE=${VNC_MODULE:-"turbovnc-1.2"}
+else
+  module use /nfs/17/jnicklas/local-oakley/share/modulefiles
+  VNC_MODULE=${VNC_MODULE:-"turbovnc/1.2.2"}
+fi
 module load ${VNC_MODULE}
 
 # requires these env vars: OUTDIR, XDIR, XSTARTUP, XLOGOUT
