@@ -41,7 +41,7 @@ Style * ForeColor black, BackColor Steelblue3
 # HilightBack - window has focus background color (dodgerblue2)
 Style * HilightFore white, HilightBack Dodgerblue2
 # Font - name of the font r-regular 14-size
-Style * Font -*-helvetica-medium-r-*-*-14-*-*-*-*-*-*-* 
+Style * Font -*-helvetica-medium-r-*-*-14-*-*-*-*-*-*-*
 # Start Windows in the top left corner unless the application specifies otherwise
 Style * PositionPlacement
 #Style * PositionPlacement Center
@@ -60,7 +60,14 @@ Mouse   1       2       A       Close
 Mouse   2       2       A       Close
 Mouse   1       RSFTI   A       -
 Mouse   2       RSFTI   A       -
-Mouse	0	4	A	Maximize	100	100
+Mouse	  0	      4       A	      Maximize	100	100
+Mouse   1       T       A       Maximize-or-Move
+
+AddToFunc Maximize-or-Move
++ D Maximize
++ C Raise
++ C Focus
++ M Move
 
 DesktopSize 1x1
 
