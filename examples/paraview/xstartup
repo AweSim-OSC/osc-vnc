@@ -2,10 +2,18 @@
 
 XDIR=${XDIR} /usr/bin/fvwm -f ${XDIR}/fvwm/fvwmrc &
 
+if [ "${CLUSTER}" == "glenn" ]; then
+  . /etc/profile.d/modules-env.sh
+  module load VirtualGL-2.3
+  module load paraview-3.8.0
+  PARAVIEW="paraview"
+elif [ "${CLUSTER}" == "oakley" ]; then
+  . /etc/profile.d/lmod.sh
+  module load virtualgl/2.3
+  export LD_LIBRARY_PATH=/usr/local/paraview/ParaView-3.14.1-Linux-x86_64/lib/paraview-3.14:/usr/local/qt/4.7.4/lib:${LD_LIBRARY_PATH}
+  PARAVIEW="/usr/local/paraview/ParaView-3.14.1-Linux-x86_64/bin/paraview"
+fi
 
-. /etc/profile.d/modules-env.sh
-module load VirtualGL-2.3
-module load paraview-3.8.0
-vglrun paraview
+vglrun ${PARAVIEW}
 
 vncserver -kill $DISPLAY
