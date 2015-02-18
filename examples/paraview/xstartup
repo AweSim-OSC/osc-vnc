@@ -6,14 +6,12 @@ if [ "${CLUSTER}" == "glenn" ]; then
   . /etc/profile.d/modules-env.sh
   module load VirtualGL-2.3
   module load paraview-3.8.0
-  PARAVIEW="paraview"
 elif [ "${CLUSTER}" == "oakley" ]; then
   . /etc/profile.d/lmod.sh
   module load virtualgl/2.3
-  export LD_LIBRARY_PATH=/usr/local/paraview/ParaView-3.14.1-Linux-x86_64/lib/paraview-3.14:/usr/local/qt/4.7.4/lib:${LD_LIBRARY_PATH}
-  PARAVIEW="/usr/local/paraview/ParaView-3.14.1-Linux-x86_64/bin/paraview"
+  module load paraview/3.14.1
 fi
 
-vglrun ${PARAVIEW}
+vglrun paraview
 
 vncserver -kill $DISPLAY
