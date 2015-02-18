@@ -128,6 +128,8 @@ class OSC::VNC::Session
 
     def wait_for_conn_info()
       # Read data from listen server
-      read_from_listen_server
+      data = nil
+      Timeout::timeout(30) { data = read_from_listen_server }
+      data
     end
 end
