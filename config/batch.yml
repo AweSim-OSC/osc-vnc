@@ -1,0 +1,11 @@
+glenn:
+    server: opt-batch.osc.edu
+
+oakley:
+    server: oak-batch.osc.edu
+
+ruby:
+    server: ruby-batch.osc.edu
+
+oxymoron:
+    server: oak-batch.osc.edu:17001

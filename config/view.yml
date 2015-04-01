@@ -1,0 +1,21 @@
+# Batch script options depending on batch type
+
+compute: &DEFAULT_VIEW
+    name: vnc
+    geom: 800x600
+    dpi: 96
+    idletimeout: 0
+    extra_args: null
+    otp?: false
+    vncauth?: true
+    pam?: false
+    ssh_tunnel?: true
+    tcp_server?: false
+
+oxymoron:
+    <<: *DEFAULT_VIEW
+    idletimeout: 300
+    otp?: true
+    vncauth?: false
+    ssh_tunnel?: false
+    tcp_server?: true

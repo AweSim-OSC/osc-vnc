@@ -1,21 +1,18 @@
 # Use turbovnc
-if [ "${CLUSTER}" == "glenn"]; then
-  VNC_MODULE=${VNC_MODULE:-"turbovnc-1.2"}
-else
-  module use /nfs/17/jnicklas/local-oakley/share/modulefiles
-  VNC_MODULE=${VNC_MODULE:-"turbovnc/1.2.2"}
-fi
-module load ${VNC_MODULE}
+{{{load_turbovnc}}}
 
-# requires these env vars: OUTDIR, XDIR, XSTARTUP, XLOGOUT
+# Set some environment variables used by this script
+export XSTARTUP_DIR={{xstartup_dir}}  # needed by fvwm
+export VNC_OUTFILE={{outdir}}/${PBS_JOBID}.conn
+export VNC_PASSFILE={{outdir}}/${PBS_JOBID}.pass
+export VNC_LOGFILE={{outdir}}/${PBS_JOBID}.log
 
-XSTARTUP=${XDIR}/${XSTARTUP}
-XLOGOUT=${XDIR}/${XLOGOUT}
-OUTFILE=${OUTDIR}/${PBS_JOBID}.conn
-LOGFILE=${OUTDIR}/${PBS_JOBID}.log
-
-# Get local hostname
-HOST=$(uname -n)
+{{#vncauth?}}
+# Generate password for VNC
+VNC_PASSWORD=$(mkpasswd -s 0 -l 8)  # passwords truncated to 8 letters
+echo ${VNC_PASSWORD} | vncpasswd -f > ${VNC_PASSFILE}
+chmod 600 ${VNC_PASSFILE}
+{{/vncauth?}}
 
 # Clean up script run when "vncserver" finishes or dies prematurely
 function clean_up {
@@ -23,28 +20,18 @@ function clean_up {
     # Better safe than sorry when cleaning up vnc server
     vncserver -kill :${DISPLAY_PORT}
     # Run developer cleanup script
-    if [ -f "${XLOGOUT}" ]; then
-        echo "Running logout script"
-        . ${XLOGOUT}
-    fi
+    {{{xlogout}}}
 }
 trap clean_up TERM EXIT
 
-# Set defaults unless already set
-VNC_GEOM=${VNC_GEOM:-"1024x768"}
-VNC_DPI=${VNC_DPI:-"96"}
-VNC_FONTS=${VNC_FONTS:-"/usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1"}
-
 # Start up vnc server and create output
-# -idletimeout = max time server will run without user before dying
-# By default vncserver runs all 3 auth's. We turn off pam and vncauth.
 # If two servers start simultaneously one will fail, loop until it succeeds
 i=0
 while [[ -z "${VNC_PID}" && "$i" -lt 30 ]]; do
     # Clean up any failed vnc sessions that didn't clean themselves up
     vncserver -list | awk '/^:/{display[$1] = $2} END{for(key in display) { if( system( "[ ! -e /proc/" display[key] " ]" ) == 0 ) { system( "vncserver -kill " key ) } }}'
     # Run the vncserver
-    VNC_OUT=$(vncserver -geometry ${VNC_GEOM} -dpi ${VNC_DPI} -fp ${VNC_FONTS} -otp -novncauth -nopam -nohttpd -idletimeout 60 -log ${LOGFILE} -xstartup ${XSTARTUP} ${VNC_ARGS} 2>&1)
+    VNC_OUT=$(vncserver -name {{name}} -geometry {{geom}} -dpi {{dpi}} -fp {{fonts}} -{{^otp?}}no{{/otp?}}otp {{#vncauth?}}-rfbauth ${PASSFILE}{{/vncauth?}}{{^vncauth?}}-novncauth{{/vncauth?}} -{{^pam?}}no{{/pam?}}pam -nohttpd -idletimeout {{idletimeout}} -log ${VNC_LOGFILE} -noxstartup {{{extra_args}}} 2>&1)
     VNC_PID=$(pgrep -s 0 Xvnc)  # Get process id
     # VNC couldn't find display so died
     if [ -z "${VNC_PID}" ]; then
@@ -59,7 +46,7 @@ while [[ -z "${VNC_PID}" && "$i" -lt 30 ]]; do
 done
 echo "${VNC_OUT}"
 
-# Make sure it is running otherwise exit
+# Make sure it is running otherwise exit with error code 1
 if [ -z "${VNC_PID}" ]; then
     exit 1
 fi
@@ -67,11 +54,19 @@ fi
 # Parse output for ports
 DISPLAY_PORT=$(echo "${VNC_OUT}" | awk -F':' '/^Desktop/{print $NF}')
 HOST_PORT=$((5900+DISPLAY_PORT))
-SOCK_PORT=$((6900+DISPLAY_PORT))
 
+# Run the xstartup script on proper vncserver display
+DISPLAY=:${DISPLAY_PORT} {{xstartup}} >> ${VNC_LOGFILE} 2>&1 &
+
+{{#otp?}}
 # Parse output for password
-PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
+OTP_PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
+{{/otp?}}
 
+{{#ssh_tunnel?}}
+HOST=$(hostname)
+{{/ssh_tunnel?}}
+{{^ssh_tunnel?}}
 # Get correct host
 #
 #    opt2647.ten.osc.edu => vis033.osc.edu
@@ -91,20 +86,29 @@ PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
 #     vis033.osc.edu.
 #
 # 3. we get rid of the ending .
-# FIXME: Was this tested on Oakley vis nodes?
-function vis_hostname_alias {
+function public_hostname {
     /sbin/ip a s to 192.148.0.0/16 | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -n1 | xargs dig +short -x | sed 's/\.$//'
 }
-
-VISHOST=$(vis_hostname_alias)
+HOST=$(public_hostname)
+{{/ssh_tunnel?}}
 
 # Output information
-echo "Host: ${VISHOST}" > ${OUTFILE}
-echo "Port: ${HOST_PORT}" >> ${OUTFILE}
-echo "Pass: ${PASSWORD}" >> ${OUTFILE}
-echo "Display: ${DISPLAY_PORT}" >> ${OUTFILE}
-nc $LISTEN_HOST $LISTEN_PORT < ${OUTFILE}
-rm -fr ${OUTFILE}
+echo "Host: ${HOST}" > ${VNC_OUTFILE}
+echo "Port: ${HOST_PORT}" >> ${VNC_OUTFILE}
+{{#vncauth?}}
+echo "Pass: ${VNC_PASSWORD}" >> ${VNC_OUTFILE}
+{{/vncauth?}}
+{{#otp?}}
+echo "Pass: ${OTP_PASSWORD}" >> ${VNC_OUTFILE}
+{{/otp?}}
+echo "Display: ${DISPLAY_PORT}" >> ${VNC_OUTFILE}
+chmod 600 ${VNC_OUTFILE}
+
+{{#tcp_server?}}
+# Send connection information over a TCP connection
+# The server information should have been passed as environment variables
+nc ${LISTEN_HOST} ${LISTEN_PORT} < ${VNC_OUTFILE}
+{{/tcp_server?}}
 
 # Wait for vnc server process to finish
 while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
