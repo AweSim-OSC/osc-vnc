@@ -59,7 +59,7 @@ module OSC
 
         # Create tcp listen server
         listen_server = nil
-        if view.tcp_server?
+        if script_view.tcp_server?
           listen_server = create_listen
           addr, port, host, ip = listen_server.addr(:hostname)
           envvars.merge! LISTEN_HOST: host, LISTEN_PORT: port
@@ -79,10 +79,10 @@ module OSC
         batch_server = YAML.load_file("#{CONFIG_PATH}/batch.yml")[batch][cluster]
         c = PBS::Conn.new(server: batch_server)
         j = PBS::Job.new(conn: c)
-        self.pbsid = j.submit(string: view.render, headers: headers, resources: resources, envvars: envvars).id
+        self.pbsid = j.submit(string: script_view.render, headers: headers, resources: resources, envvars: envvars).id
 
         # Get connection information right away if using tcp server
-        _get_listen_conn_info(listen_server) if view.tcp_server?
+        _get_listen_conn_info(listen_server) if script_view.tcp_server?
 
         self
       end
@@ -95,9 +95,9 @@ module OSC
         _get_file_conn_info(conn_file)
       end
 
-      def view
-        View.new(batch: batch, cluster: cluster, xstartup: xstartup,
-                xlogout: xlogout, outdir: outdir, options: options)
+      def script_view
+        ScriptView.new(batch: batch, cluster: cluster, xstartup: xstartup,
+                       xlogout: xlogout, outdir: outdir, options: options)
       end
 
 

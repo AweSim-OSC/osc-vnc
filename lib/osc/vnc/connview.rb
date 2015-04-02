@@ -2,20 +2,20 @@ require 'mustache'
 
 module OSC
   module VNC
-    class ConnInfo
+    class ConnView
       attr_reader :session
 
       def initialize(args)
         @session = args[:session]
       end
 
-      Dir.glob("#{VIEWS_PATH}/*.mustache") do |file|
+      Dir.glob("#{CONN_TEMPLATE_PATH}/*.mustache") do |file|
         basename = File.basename(file)
         type = File.basename(file, ".mustache")
 
         define_method(type.prepend("to_").to_sym) do
-          template = "#{VIEWS_PATH}/ssh/#{basename}"
-          if !session.view.ssh_tunnel? || !File.file?(template)
+          template = "#{CONN_TEMPLATE_PATH}/ssh/#{basename}"
+          if !session.script_view.ssh_tunnel? || !File.file?(template)
             template = file
           end
 
