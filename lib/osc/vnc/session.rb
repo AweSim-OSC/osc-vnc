@@ -72,6 +72,13 @@ module OSC
         # Make output directory if it doesn't already exist
         FileUtils.mkdir_p(outdir)
 
+        # Use proper torque library
+        if batch == "oxymoron"
+          PBS::Torque.init lib: TORQUE_OXYMORON_LIB
+        else
+          PBS::Torque.init lib: TORQUE_COMPUTE_LIB
+        end
+
         # Connect to server and submit job with proper PBS attributes
         batch_server = YAML.load_file("#{CONFIG_PATH}/batch.yml")[batch][cluster]
         c = PBS::Conn.new(server: batch_server)
