@@ -1,135 +1,89 @@
-require 'osc/vnc/formattable'
-require 'osc/vnc/listenable'
+require 'yaml'
 require 'fileutils'
 
+require 'osc/vnc/listenable'
+
 class OSC::VNC::Session
-  # Systems
-  SYSTEMS = %w(glenn oakley ruby)
-
-  # VNC batch script
-  BATCH_SCRIPT = File.expand_path(File.dirname(__FILE__)) + "/../../../data/vnc.pbs"
-
-  include OSC::VNC::Formattable
   include OSC::VNC::Listenable
 
-  DEFAULT = {
-    name: 'vnc',
+  DEFAULT_ARGS = {
+    # Batch setup information
+    batch: 'oxymoron',
     cluster: 'glenn',
-    walltime: '00:05:00',
+    headers: {
+      PBS::Torque::ATTR[:N] => "VNC_Job",
+      PBS::Torque::ATTR[:o] => "#{outdir}/$PBS_JOBID.output",
+      PBS::Torque::ATTR[:j] => "oe",
+      PBS::Torque::ATTR[:S] => "/bin/bash"
+    },
+    resources: {},
+    envvars: {},
+    # Batch template options
+    xstartup: nil,
+    xlogout: nil,
     outdir: ENV['PWD'],
-    xdir: nil,
-    xstartup: 'xstartup',
-    xlogout: 'xlogout'
+    options: {}
   }
 
-  attr_accessor :opts
+  attr_accessor :batch, :cluster, :headers, :resources, :envvars
+  attr_accessor :xstartup, :xlogout, :outdir, :options
   attr_accessor :pbsid, :host, :port, :display, :password
+  attr_reader :view
 
-  # Any options passed to the constructor become environment
-  # variables in the batch script
-  # Example:
-  #   Session.new(cluster: 'oakley', xdir: '/path/to/xstartup', module: 'comsol/5.3')
-  #   becomes in the batch script
-  #   => $CLUSTER, $XDIR, $MODULE, and any other defaults defined above
-  def initialize(options)
-    @opts = DEFAULT.merge(options)
+  def initialize(args)
+    args = DEFAULT_ARGS.merge(args)
+
+    # Batch setup information
+    @batch = args[:batch]
+    @cluster = args[:cluster]
+    @headers = args[:headers]
+    @resources = args[:resources]
+    @envvars = args[:envvars]
+
+    # Batch template args
+    @xstartup = args[:xstartup]
+    @xlogout = args[:xlogout]
+    @outdir = args[:outdir]
+    @options = args[:options]
   end
 
-  # Run the VNC session using Oxymoron batch queue
   def run()
-    # Check for errors in user supplied options
-    check_arg_errors
+    raise ArgumentError, "xstartup script is not found" unless File.file?(xstartup)
+    raise ArgumentError, "output directory is a file" if File.file?(outdir)
 
-    # Create callback for PBS script
-    create_pbs_callback
+    self.view = View.new(batch: batch, cluster: cluster, xstartup: xstartup,
+                         xlogout: xlogout, outdir: outdir, options: options)
+
+    # Create tcp listen server
+    listen_server = nil
+    listen_server = create_listen if view.tcp_server?
 
     # Make output directory if it doesn't already exist
-    FileUtils.mkdir_p(opts[:outdir])
+    FileUtils.mkdir_p(outdir)
 
     # Connect to server and submit job with proper PBS attributes
-    c = PBS.pbs_connect(OSC::VNC::SERVER)
-    attropl = create_attr()
-    self.pbsid = PBS.pbs_submit(c, attropl, "#{BATCH_SCRIPT}", nil, nil)
-    PBS.pbs_disconnect(c)
+    batch_server = YAML.load_file("#{CONFIG_PATH}/batch.yml")[batch][cluster]
+    c = PBS::Conn.new(server: batch_server)
+    j = PBS::Job.new(conn: c)
+    self.pbsid = j.submit(string: view.render, headers: headers, resources: resources, envvars: envvars)
 
     # Get connection information
-    get_conn_info
+    _get_listen_conn_info(listen_server) if view.tcp_server?
 
     self
   end
 
-  def to_s()
-    # Output as string
-    <<-EOF.gsub /^\s+/, ''
-      PBSid: #{pbsid}
-      Host: #{host}
-      Port: #{port}
-      Pass: #{password}
-      Display: #{display}
-    EOF
+
+  def _get_listen_conn_info(server)
+    # Wait until VNC conn info is created by PBS batch script
+    # Timeout after 30 seconds if no info is sent
+    response = nil
+    Timeout::timeout(30) { response = read_listen(server: server) }
+
+    # Get connection info
+    {:@host => 'Host', :@port => 'Port', :@display => 'Display', :@password => 'Pass'}.each do |key, value|
+      instance_variable_set(key, /^#{value}: (.*)$/.match(response)[1])
+      raise RuntimeError, "#{key} not specified by batch job" unless instance_variable_get(key)
+    end
   end
-
-  def url()
-    # Output as a URL --- future placeholder
-    "http://#{host}:#{port}/vnc_auto.html?password=#{password}"
-  end
-
-  ########################################
-  # Private methods
-  ########################################
-
-    def check_arg_errors()
-      # Check for errors with any of the user supplied arguments
-      raise ArgumentError, "xstartup directory is undefined" unless opts[:xdir]
-      raise ArgumentError, "xstartup script is not found" unless File.file?("#{opts[:xdir]}/#{opts[:xstartup]}")
-      raise ArgumentError, "output directory is a file" if File.file?(opts[:outdir])
-      raise ArgumentError, "invalid cluster system" unless SYSTEMS.include?(opts[:cluster])
-      raise ArugmentError, "invalid walltime" unless /^\d\d:\d\d:\d\d$/.match(opts[:walltime])
-    end
-
-    def create_attr()
-      # Convert extra options to comma delimited environment variable list
-      pbs_vars = opts.map { |k,v| "#{k.upcase}=#{v}" }.join(",")
-
-      # PBS attributes for a VNC job
-      localhost = Socket.gethostname
-      attropl = []
-      attropl << {name: PBS::ATTR_N, value: opts[:name]}
-      attropl << {name: PBS::ATTR_l, resource: "walltime", value: opts[:walltime]}
-      attropl << {name: PBS::ATTR_l, resource: "nodes", value: "1:ppn=1:#{opts[:cluster]}"}
-      attropl << {name: PBS::ATTR_o, value: "#{localhost}:#{opts[:outdir]}/$PBS_JOBID.output"}
-      attropl << {name: PBS::ATTR_j, value: "oe"}
-      attropl << {name: PBS::ATTR_M, value: "noreply@osc.edu"}
-      attropl << {name: PBS::ATTR_S, value: "/bin/bash"}
-      attropl << {name: PBS::ATTR_v, value: "#{pbs_vars}"}
-      attropl
-    end
-
-    def get_conn_info()
-      conn_file = "#{opts[:outdir]}/#{pbsid}.conn"
-
-      # Wait until VNC conn info is created by PBS batch script
-      response = wait_for_conn_info
-
-      # Get connection info
-      {:@host => 'Host', :@port => 'Port', :@display => 'Display', :@password => 'Pass'}.each do |key, value|
-        instance_variable_set(key, /^#{value}: (.*)$/.match(response)[1])
-        raise RuntimeError, "#{key} not specified by batch job" unless instance_variable_get(key)
-      end
-    end
-
-    def create_pbs_callback()
-      # Create a listen server and pass listen server info to
-      # PBS batch script, so it can callback with VNC conn info
-      create_listen_server
-      self.opts[:listen_host] = Socket.gethostname
-      self.opts[:listen_port] = listen_port
-    end
-
-    def wait_for_conn_info()
-      # Read data from listen server
-      data = nil
-      Timeout::timeout(30) { data = read_from_listen_server }
-      data
-    end
 end
