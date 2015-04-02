@@ -6,16 +6,16 @@ require 'osc/vnc/listenable'
 class OSC::VNC::Session
   include OSC::VNC::Listenable
 
+  attr_accessor :batch, :cluster, :headers, :resources, :envvars
+  attr_accessor :xstartup, :xlogout, :outdir, :options
+  attr_accessor :pbsid, :host, :port, :display, :password
+  attr_reader :view
+
   DEFAULT_ARGS = {
     # Batch setup information
-    batch: 'oxymoron',
-    cluster: 'glenn',
-    headers: {
-      PBS::Torque::ATTR[:N] => "VNC_Job",
-      PBS::Torque::ATTR[:o] => "#{outdir}/$PBS_JOBID.output",
-      PBS::Torque::ATTR[:j] => "oe",
-      PBS::Torque::ATTR[:S] => "/bin/bash"
-    },
+    batch: "oxymoron",
+    cluster: "glenn",
+    headers: {},
     resources: {},
     envvars: {},
     # Batch template options
@@ -24,11 +24,6 @@ class OSC::VNC::Session
     outdir: ENV['PWD'],
     options: {}
   }
-
-  attr_accessor :batch, :cluster, :headers, :resources, :envvars
-  attr_accessor :xstartup, :xlogout, :outdir, :options
-  attr_accessor :pbsid, :host, :port, :display, :password
-  attr_reader :view
 
   def initialize(args)
     args = DEFAULT_ARGS.merge(args)
@@ -45,6 +40,16 @@ class OSC::VNC::Session
     @xlogout = args[:xlogout]
     @outdir = args[:outdir]
     @options = args[:options]
+  end
+
+  # Default headers are generated based on user input
+  def headers
+    {
+      PBS::Torque::ATTR[:N] => "VNC_Job",
+      PBS::Torque::ATTR[:o] => "#{outdir}/$PBS_JOBID.output",
+      PBS::Torque::ATTR[:j] => "oe",
+      PBS::Torque::ATTR[:S] => "/bin/bash"
+    }.merge @headers
   end
 
   def run()

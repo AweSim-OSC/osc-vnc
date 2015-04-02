@@ -1,4 +1,4 @@
-include 'mustache'
+require 'mustache'
 
 module OSC
   module VNC
@@ -9,19 +9,27 @@ module OSC
         @session = args[:session]
       end
 
-      Dir.glob("#{VIEWS}/*.mustache") do |file|
+      Dir.glob("#{VIEWS_PATH}/*.mustache") do |file|
         basename = File.basename(file)
         type = File.basename(file, ".mustache")
 
         define_method(type.prepend("to_").to_sym) do
-          template = "#{VIEWS}/ssh/#{basename}"
+          template = "#{VIEWS_PATH}/ssh/#{basename}"
           if !session.view.ssh_tunnel? || !File.file?(template)
             template = file
           end
 
           string = nil
           File.open(template, 'r') do |f|
-            string = Mustache.render(f.read, session)
+            context = {
+              host: session.host,
+              port: session.port,
+              display: session.display,
+              password: session.password,
+              sshuser: ENV['USER'],
+              sshhost: "#{session.cluster}.osc.edu"
+            }
+            string = Mustache.render(f.read, context)
           end
           string
         end
