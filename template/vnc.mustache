@@ -31,7 +31,7 @@ while [[ -z "${VNC_PID}" && "$i" -lt 30 ]]; do
     # Clean up any failed vnc sessions that didn't clean themselves up
     vncserver -list | awk '/^:/{display[$1] = $2} END{for(key in display) { if( system( "[ ! -e /proc/" display[key] " ]" ) == 0 ) { system( "vncserver -kill " key ) } }}'
     # Run the vncserver
-    VNC_OUT=$(vncserver -name {{name}} -geometry {{geom}} -dpi {{dpi}} -fp {{fonts}} -{{^otp?}}no{{/otp?}}otp {{#vncauth?}}-rfbauth ${PASSFILE}{{/vncauth?}}{{^vncauth?}}-novncauth{{/vncauth?}} -{{^pam?}}no{{/pam?}}pam -nohttpd -idletimeout {{idletimeout}} -log ${VNC_LOGFILE} -noxstartup {{{extra_args}}} 2>&1)
+    VNC_OUT=$(vncserver -name {{name}} -geometry {{geom}} -dpi {{dpi}} -fp {{fonts}} -{{^otp?}}no{{/otp?}}otp {{#vncauth?}}-rfbauth ${VNC_PASSFILE}{{/vncauth?}}{{^vncauth?}}-novncauth{{/vncauth?}} -{{^pam?}}no{{/pam?}}pam -nohttpd -idletimeout {{idletimeout}} -log ${VNC_LOGFILE} -noxstartup {{{extra_args}}} 2>&1)
     VNC_PID=$(pgrep -s 0 Xvnc)  # Get process id
     # VNC couldn't find display so died
     if [ -z "${VNC_PID}" ]; then
