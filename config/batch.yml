@@ -1,9 +1,11 @@
 compute:
+    lib: /usr/local/torque-2.4.10/lib/libtorque.so
     glenn:  opt-batch.osc.edu
     oakley: oak-batch.osc.edu
     ruby:   ruby-batch.osc.edu
 
 oxymoron:
+    lib: /usr/local/torque-4.2.8/lib/libtorque.so
     glenn:  oak-batch.osc.edu:17001
     oakley: oak-batch.osc.edu:17001
     ruby:   oak-batch.osc.edu:17001
