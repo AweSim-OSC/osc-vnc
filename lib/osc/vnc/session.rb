@@ -46,10 +46,10 @@ module OSC
       # Default headers are generated based on user input
       def headers
         {
-          PBS::Torque::ATTR[:N] => "VNC_Job",
-          PBS::Torque::ATTR[:o] => "#{outdir}/$PBS_JOBID.output",
-          PBS::Torque::ATTR[:j] => "oe",
-          PBS::Torque::ATTR[:S] => "/bin/bash"
+          PBS::ATTR[:N] => "VNC_Job",
+          PBS::ATTR[:o] => "#{outdir}/$PBS_JOBID.output",
+          PBS::ATTR[:j] => "oe",
+          PBS::ATTR[:S] => "/bin/bash"
         }.merge @headers
       end
 
