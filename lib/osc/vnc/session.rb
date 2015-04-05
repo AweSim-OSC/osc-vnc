@@ -54,16 +54,15 @@ module OSC
       end
 
       def run()
+        self.xstartup = File.expand_path xstartup
+        self.xlogout = File.expand_path xlogout if xlogout
+        self.outdir = File.expand_path outdir
         raise ArgumentError, "xstartup script is not found" unless File.file?(xstartup)
         raise ArgumentError, "output directory is a file" if File.file?(outdir)
 
         # Create tcp listen server
         listen_server = nil
-        if script_view.tcp_server?
-          listen_server = create_listen
-          addr, port, host, ip = listen_server.addr(:hostname)
-          envvars.merge! LISTEN_HOST: host, LISTEN_PORT: port
-        end
+        listen_server = _create_listen_server if script_view.tcp_server?
 
         # Make output directory if it doesn't already exist
         FileUtils.mkdir_p(outdir)
@@ -99,6 +98,15 @@ module OSC
       # Get connection information from a file
       def _get_file_conn_info(file)
         _parse_conn_info File.read(file)
+      end
+
+      # Create a tcp listen server and set appropriate
+      # environment variables for batch script to phone home
+      def _create_listen_server
+        listen_server = create_listen
+        _, port, host, _ = listen_server.addr(:hostname)
+        envvars.merge! LISTEN_HOST: host, LISTEN_PORT: port
+        listen_server
       end
 
       # Get connection information from a TCP listening server
