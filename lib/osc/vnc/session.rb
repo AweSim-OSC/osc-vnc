@@ -92,8 +92,8 @@ module OSC
       # job (read template/vnc.mustache)
       def refresh_conn_info
         conn_file = "#{outdir}/#{pbsid}.conn"
-        raise RuntimeError, "connection file doesn't exist" unless File.file?(conn_file)
         _get_file_conn_info(conn_file)
+        self
       end
 
       def script_view
@@ -104,6 +104,7 @@ module OSC
 
       # Get connection information from a file
       def _get_file_conn_info(file)
+        raise RuntimeError, "connection file doesn't exist" unless File.file?(file)
         _parse_conn_info File.read(file)
       end
 
