@@ -41,6 +41,13 @@ module OSC
         @xlogout = args[:xlogout]
         @outdir = args[:outdir]
         @options = args[:options]
+
+        # PBS connection info (typically discovered later)
+        @pbsid = args[:pbsid]
+        @host = args[:host]
+        @port = args[:port]
+        @display = args[:display]
+        @password = args[:password]
       end
 
       # Default headers are generated based on user input
