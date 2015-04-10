@@ -6,19 +6,17 @@ TODO: Write a gem description
 
 First install the gems if you haven't already:
 
-    $ bundle install --path vendor/bundle
+    $ bundle install --local
 
-On a webservices node:
+In your Gemfile on a websvcs node:
 
-    $ bundle exec osc-vnc [options] -x <xstartup_dir>
+    gem 'osc-vnc'
 
-Example...
+## Binary
 
-    $ bundle exec osc-vnc -x examples/paraview/
-
-To get a list of arguments type:
-
-    $ bundle exec osc-vnc -h
+    The binary was removed in a previous commit as it caused issues with
+    installing the gem locally through Bundler. This occurred in commit:
+    b7b0f17a9cf85aa59106c65b3fc3cc4996d774ff
 
 ## Contributing
 
