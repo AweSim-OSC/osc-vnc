@@ -14,9 +14,9 @@ In your Gemfile on a websvcs node:
 
 ## Binary
 
-    The binary was removed in a previous commit as it caused issues with
-    installing the gem locally through Bundler. This occurred in commit:
-    b7b0f17a9cf85aa59106c65b3fc3cc4996d774ff
+The binary was removed in a previous commit as it caused issues with
+installing the gem locally through Bundler. This occurred in commit:
+b7b0f17a9cf85aa59106c65b3fc3cc4996d774ff
 
 ## Contributing
 
