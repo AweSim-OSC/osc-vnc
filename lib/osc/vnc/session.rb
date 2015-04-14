@@ -76,8 +76,8 @@ module OSC
 
         # Connect to server and submit job with proper PBS attributes
         batch_config = YAML.load_file("#{CONFIG_PATH}/batch.yml")
-        PBS::Torque.init lib: batch_config[batch]['lib']
-        batch_server = batch_config[batch][cluster]
+        PBS::Torque.init lib: batch_config[cluster][batch]['lib']
+        batch_server = batch_config[cluster][batch]['server']
         c = PBS::Conn.new(server: batch_server)
         j = PBS::Job.new(conn: c)
         self.pbsid = j.submit(string: script_view.render, headers: headers, resources: resources, envvars: envvars).id
