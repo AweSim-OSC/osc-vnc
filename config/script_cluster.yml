@@ -10,7 +10,7 @@ oakley:
     fonts: /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1
     load_turbovnc: |
         module use /nfs/17/jnicklas/local-oakley/share/modulefiles
-        module load turbovnc/1.2.2
+        module load turbovnc/1.2.90
 
 ruby:
     fonts: /usr/share/X11/fonts/misc,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1
