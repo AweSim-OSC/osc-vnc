@@ -9,11 +9,11 @@ glenn:
 oakley:
     fonts: /usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1
     load_turbovnc: |
-        module use /nfs/17/jnicklas/local-oakley/share/modulefiles
+        module use /nfs/gpfs/PZS0645/local-oakley/share/modulefiles
         module load turbovnc/1.2.90
 
 ruby:
     fonts: /usr/share/X11/fonts/misc,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1
     load_turbovnc: |
-        module use /nfs/17/jnicklas/local-ruby/share/modulefiles
+        module use /nfs/gpfs/PZS0645/local-ruby/share/modulefiles
         module load turbovnc/1.2.90
