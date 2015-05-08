@@ -17,6 +17,10 @@ module OSC
         @xlogout = args[:xlogout]
         @outdir = args[:outdir]
 
+        # Configuration files
+        config = args[:config] || "#{CONFIG_PATH}/script.yml"
+        cluster_config = args[:cluster_config] || "#{CONFIG_PATH}/script_cluster.yml"
+
         # Batch server and cluster to be used
         # along with overriding user options
         batch = args[:batch]
@@ -26,9 +30,9 @@ module OSC
         # Read in VNC specific args for given batch system
         # & cluster... Merge in user-defined options
         # and make methods out of them for Mustache
-        script_cfg = YAML.load_file("#{CONFIG_PATH}/script.yml")
+        script_cfg = YAML.load_file config
         raise ArgumentError, "invalid batch system" unless script_cfg.key? batch
-        cluster_cfg = YAML.load_file("#{CONFIG_PATH}/script_cluster.yml")
+        cluster_cfg = YAML.load_file cluster_config
         raise ArgumentError, "invalid cluster system" unless cluster_cfg.key? cluster
         default_args = script_cfg[batch].merge cluster_cfg[cluster]
         default_args.merge! options
