@@ -11,19 +11,18 @@ module OSC
       attr_accessor :xstartup, :xlogout, :outdir, :options
       attr_accessor :pbsid, :host, :port, :display, :password
 
-      DEFAULT_ARGS = {
+      DEFAULT_ARGS      = {
         # Batch setup information
         batch: "oxymoron",
         cluster: "glenn",
-        headers: {},
-        resources: {},
-        envvars: {},
         # Batch template options
         xstartup: nil,
         xlogout: nil,
         outdir: ENV['PWD'],
-        options: {}
       }
+      DEFAULT_RESOURCES = {}
+      DEFAULT_ENVVARS   = {}
+      DEFAULT_OPTIONS   = {}
 
       def initialize(args)
         args = DEFAULT_ARGS.merge(args)
@@ -32,14 +31,14 @@ module OSC
         @batch = args[:batch]
         @cluster = args[:cluster]
         @headers = args[:headers]
-        @resources = args[:resources]
-        @envvars = args[:envvars]
+        @resources = DEFAULT_RESOURCES.merge args[:resources]
+        @envvars = DEFAULT_ENVVARS.merge args[:envvars]
 
         # Batch template args
         @xstartup = args[:xstartup]
         @xlogout = args[:xlogout]
         @outdir = args[:outdir]
-        @options = args[:options]
+        @options = DEFAULT_OPTIONS.merge args[:options]
 
         # PBS connection info (typically discovered later)
         @pbsid = args[:pbsid]
