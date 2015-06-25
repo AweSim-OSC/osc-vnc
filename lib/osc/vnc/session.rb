@@ -30,15 +30,15 @@ module OSC
         # Batch setup information
         @batch = args[:batch]
         @cluster = args[:cluster]
-        @headers = args[:headers]
-        @resources = DEFAULT_RESOURCES.merge args[:resources]
-        @envvars = DEFAULT_ENVVARS.merge args[:envvars]
+        @headers = args[:headers] || {}
+        @resources = DEFAULT_RESOURCES.merge(args[:resources] || {})
+        @envvars = DEFAULT_ENVVARS.merge(args[:envvars] || {})
 
         # Batch template args
         @xstartup = args[:xstartup]
         @xlogout = args[:xlogout]
         @outdir = args[:outdir]
-        @options = DEFAULT_OPTIONS.merge args[:options]
+        @options = DEFAULT_OPTIONS.merge(args[:options] || {})
 
         # PBS connection info (typically discovered later)
         @pbsid = args[:pbsid]
