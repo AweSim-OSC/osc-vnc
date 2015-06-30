@@ -75,7 +75,7 @@ module OSC
         # Connect to server and submit job with proper PBS attributes
         c = PBS::Conn.new(cluster: cluster, batch: batch)
         j = PBS::Job.new(conn: c)
-        self.pbsid = j.submit(string: script_view.render, headers: headers, resources: resources, envvars: envvars).id
+        self.pbsid = j.submit(string: script_view.render, headers: headers, resources: resources, envvars: envvars, qsub: true).id
 
         # Get connection information right away if using tcp server
         _get_listen_conn_info(listen_server) if script_view.tcp_server?
