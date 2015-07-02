@@ -2,6 +2,7 @@
 
 compute: &DEFAULT_VIEW
     name: vnc
+    vnc?: true
     geom: 800x600
     dpi: 96
     idletimeout: 0

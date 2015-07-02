@@ -1,11 +1,12 @@
-# Use turbovnc
-{{{load_turbovnc}}}
-
 # Set some environment variables used by this script
 export XSTARTUP_DIR={{xstartup_dir}}  # needed by fvwm
 export VNC_OUTFILE={{outdir}}/${PBS_JOBID}.conn
 export VNC_PASSFILE={{outdir}}/${PBS_JOBID}.pass
 export VNC_LOGFILE={{outdir}}/${PBS_JOBID}.log
+
+{{#vnc?}}
+# Use turbovnc
+{{{load_turbovnc}}}
 
 {{#vncauth?}}
 # Generate password for VNC
@@ -13,17 +14,22 @@ VNC_PASSWORD=$(mkpasswd -s 0 -l 8)  # passwords truncated to 8 letters
 echo ${VNC_PASSWORD} | vncpasswd -f > ${VNC_PASSFILE}
 chmod 600 ${VNC_PASSFILE}
 {{/vncauth?}}
+{{/vnc?}}
 
 # Clean up script run when "vncserver" finishes or dies prematurely
+# Note: must be defined after `module load`
 function clean_up {
     echo "Exiting..."
+    {{#vnc?}}
     # Better safe than sorry when cleaning up vnc server
     vncserver -kill :${DISPLAY_PORT}
+    {{/vnc?}}
     # Run developer cleanup script
     {{{xlogout}}}
 }
 trap clean_up TERM EXIT
 
+{{#vnc?}}
 # Start up vnc server and create output
 # If two servers start simultaneously one will fail, loop until it succeeds
 i=0
@@ -55,13 +61,29 @@ fi
 DISPLAY_PORT=$(echo "${VNC_OUT}" | awk -F':' '/^Desktop/{print $NF}')
 HOST_PORT=$((5900+DISPLAY_PORT))
 
-# Run the xstartup script on proper vncserver display
-DISPLAY=:${DISPLAY_PORT} {{xstartup}} >> ${VNC_LOGFILE} 2>&1 &
-
 {{#otp?}}
 # Parse output for password
 OTP_PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
 {{/otp?}}
+{{/vnc?}}
+
+{{^vnc?}}
+# Create logfile
+> ${VNC_LOGFILE}
+
+# Initialize env vars
+DISPLAY_PORT=${DISPLAY#:}
+# HOST_PORT=${HOST_PORT:-"0"}
+
+{{#xinit}}
+# Run developer supplied xinit script
+source {{xinit}}
+{{/xinit}}
+{{/vnc?}}
+
+# Run the xstartup script on proper vncserver display
+{{#vnc?}}DISPLAY=:${DISPLAY_PORT}{{/vnc?}} {{xstartup}} >> ${VNC_LOGFILE} 2>&1 &
+SCRIPT_PID=$(pgrep -s 0 -f {{xstartup}})
 
 {{#ssh_tunnel?}}
 HOST=$(hostname)
@@ -95,12 +117,17 @@ HOST=$(public_hostname)
 # Output information
 echo "Host: ${HOST}" > ${VNC_OUTFILE}
 echo "Port: ${HOST_PORT}" >> ${VNC_OUTFILE}
+{{#vnc?}}
 {{#vncauth?}}
 echo "Pass: ${VNC_PASSWORD}" >> ${VNC_OUTFILE}
 {{/vncauth?}}
 {{#otp?}}
 echo "Pass: ${OTP_PASSWORD}" >> ${VNC_OUTFILE}
 {{/otp?}}
+{{/vnc?}}
+{{^vnc?}}
+echo "Pass: ${PASSWORD}" >> ${VNC_OUTFILE}
+{{/vnc?}}
 echo "Display: ${DISPLAY_PORT}" >> ${VNC_OUTFILE}
 chmod 600 ${VNC_OUTFILE}
 
@@ -111,7 +138,7 @@ nc ${LISTEN_HOST} ${LISTEN_PORT} < ${VNC_OUTFILE}
 {{/tcp_server?}}
 
 # Wait for vnc server process to finish
-while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
+while [ -e /proc/${SCRIPT_PID} ]; do sleep 0.1; done
 
 # Exit cleanly
 exit 0
