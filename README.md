@@ -78,6 +78,86 @@ conn_info = OSC::VNC::ConnView.new(session: session)
 conn_info.to_jnlp
 ```
 
+### VNC Server options
+
+You can specify different options when running a vnc session. When choosing the
+batch system to submit the job to `compute` vs `oxymoron`, a default set of
+options found in `osc-vnc/config/script.yml` are applied to your job. When
+choosing a cluster `Glenn`, `Oakley`, or `Ruby` the cluster specific set of
+default options are located in `osc-vnc/config/script-cluster.yml`.
+
+You can alter these options when creating a session by specifying them as a
+hash in the `:options` key when initializing the object. An example:
+
+```ruby
+...
+
+# Specify your personal VNC session options to override defaults
+options = {
+    :geom => '1920x1200',
+    :'otp?' => false,
+    :'vncauth?' => true,
+    :'ssh_tunnel?' => true
+  }
+
+
+# We now create our session, note that we now append an `options` parameter
+session = OSC::VNC::Session.new(batch: 'oxymoron', cluster: 'oakley',
+    xstartup: xstartup, outdir: outdir, headers: headers, resources: resources,
+    envvars: envvars, options: options)
+```
+
+### xstartup
+
+An `xstartup` script is treated like any other bash script that launches the
+application you want. If no environment variables are needed, it could
+theoretically be run directly on an OSC desktop session by itself.
+
+One such example would be launching Paraview:
+
+```bash
+#!/bin/bash
+
+# This loads up any Xresources the user specifies
+# as well as gives the background a nice grey color
+if [ -e $HOME/.Xresources  ]; then
+  xrdb $HOME/.Xresources
+fi
+xsetroot -solid grey
+
+# We need a window manager otherwise the windows will
+# look horrendous, for this we use FVWM (please refer to
+# FillSim for an example of the `fvwmrc` file used)
+XDIR=${XSTARTUP_DIR} /usr/bin/fvwm -f ${XSTARTUP_DIR}/fvwm/fvwmrc &
+
+# Load the required modules on Oakley
+. /etc/profile.d/lmod.sh
+module load paraview/3.14.1
+
+# If we are running this app on a node with an Xorg server running
+# i.e., there is a GPU on this node that we can utilize for OpenGL
+# graphics (which is true for the Oxymoron cluster)
+module load virtualgl/2.3
+
+# Now we start the application
+vglrun paraview
+
+# Be sure to clean up the VNC server after the user exits the above
+# running process
+vncserver -kill ${DISPLAY}
+```
+
+You may or may not need VirtualGL depending on the type of application. Be sure
+to only use it on a node with an Xorg server running. For any other node you
+should omit it and its binary `vglrun`.
+
+You can find a very generic example of an `fvwmrc` file in the
+`containerfillsim` GitHub repo under the path:
+
+```bash
+containerfillsim/jobs/vnc/paraview/fvwm/fvwmrc
+```
+
 ## Contributing
 
 1. Fork it
