@@ -83,8 +83,8 @@ conn_info.to_jnlp
 You can specify different options when running a vnc session. When choosing the
 batch system to submit the job to `compute` vs `oxymoron`, a default set of
 options found in [config/script.yml](config/script.yml) are applied to your job. When
-choosing a cluster `Glenn`, `Oakley`, or `Ruby` the cluster specific set of
-default options are located in `osc-vnc/config/script-cluster.yml`.
+choosing a cluster `glenn`, `oakley`, or `ruby` the cluster specific set of
+default options are located in [config/script-cluster.yml](config/script-cluster.yml).
 
 You can alter these options when creating a session by specifying them as a
 hash in the `:options` key when initializing the object. An example:
