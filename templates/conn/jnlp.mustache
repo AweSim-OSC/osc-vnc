@@ -1,3 +1,4 @@
+{{^ssh?}}
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" codebase="http://mirror.osc.edu/mirror" >
   <information>
@@ -21,4 +22,28 @@
       <argument>{{password}}</argument>
   </application-desc>
 </jnlp>
-
+{{/ssh?}}
+{{#ssh?}}
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="http://mirror.osc.edu/mirror" >
+  <information>
+    <title>TightVnc Viewer</title>
+      <vendor>GlavSoft LLC.</vendor>
+      <offline-allowed/>
+  </information>
+  <security>
+   <all-permissions/>
+  </security>
+  <resources>
+    <j2se version="1.6+"/>
+    <jar href="tightvnc-jviewer.jar" main="true"/>
+  </resources>
+  <application-desc main-class="com.glavsoft.viewer.Viewer">
+    <argument>-host={{host}}</argument>
+    <argument>-port={{port}}</argument>
+    <argument>-password={{password}}</argument>
+    <argument>-sshhost={{sshhost}}</argument>
+    <argument>-sshuser={{sshuser}}</argument>
+  </application-desc>
+</jnlp>
+{{/ssh?}}

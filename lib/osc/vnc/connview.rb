@@ -9,16 +9,11 @@ module OSC
         @session = args[:session]
       end
 
-      Dir.glob("#{CONN_TEMPLATE_PATH}/*.mustache") do |file|
-        basename = File.basename(file)
-        type = File.basename(file, ".mustache")
+      Dir.glob("#{CONN_TEMPLATE_PATH}/*.mustache") do |template|
+        basename = File.basename(template)
+        type = File.basename(template, ".mustache")
 
-        define_method(type.prepend("to_").to_sym) do
-          template = "#{CONN_TEMPLATE_PATH}/ssh/#{basename}"
-          if !session.script_view.ssh_tunnel? || !File.file?(template)
-            template = file
-          end
-
+        define_method(type.prepend("to_").to_sym) do |args = {}|
           string = nil
           File.open(template, 'r') do |f|
             context = {
@@ -28,7 +23,8 @@ module OSC
               password: session.password,
               sshuser: ENV['USER'],
               sshhost: "#{session.cluster}.osc.edu"
-            }
+              :'ssh?' => session.script_view.ssh_tunnel?
+            }.merge args
             string = Mustache.render(f.read, context)
           end
           string
