@@ -122,8 +122,9 @@ module OSC
       # Parse out connection info from a string
       def _parse_conn_info(string)
         {:@host => 'Host', :@port => 'Port', :@display => 'Display', :@password => 'Pass'}.each do |key, value|
-          instance_variable_set(key, /^#{value}: (.*)$/.match(string)[1])
-          raise RuntimeError, "#{key} not specified by batch job" unless instance_variable_get(key)
+          match = /^#{value}: (.*)$/.match(string)
+          raise RuntimeError, "#{key} not specified by batch job" unless match
+          instance_variable_set(key, match[1].empty? ? nil : match[1])
         end
       end
     end
