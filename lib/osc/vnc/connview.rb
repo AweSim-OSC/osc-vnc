@@ -22,7 +22,7 @@ module OSC
               display: session.display,
               password: session.password,
               sshuser: ENV['USER'],
-              sshhost: "#{session.cluster}.osc.edu"
+              sshhost: "#{session.cluster}.osc.edu",
               :'ssh?' => session.script_view.ssh_tunnel?
             }.merge args
             string = Mustache.render(f.read, context)
