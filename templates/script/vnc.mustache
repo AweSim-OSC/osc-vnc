@@ -137,8 +137,14 @@ chmod 600 ${VNC_OUTFILE}
 nc ${LISTEN_HOST} ${LISTEN_PORT} < ${VNC_OUTFILE}
 {{/tcp_server?}}
 
+{{#vnc?}}
 # Wait for vnc server process to finish
+while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
+{{/vnc?}}
+{{^vnc?}}
+# Wait for script process to finish
 while [ -e /proc/${SCRIPT_PID} ]; do sleep 0.1; done
+{{/vnc?}}
 
 # Exit cleanly
 exit 0
