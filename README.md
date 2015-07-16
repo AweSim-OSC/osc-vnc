@@ -90,8 +90,6 @@ You can alter these options when creating a session by specifying them as a
 hash in the `:options` key when initializing the object. An example:
 
 ```ruby
-...
-
 # Specify your personal VNC session options to override defaults
 options = {
     :geom => '1920x1200',

@@ -24,26 +24,49 @@
 </jnlp>
 {{/ssh?}}
 {{#ssh?}}
-<?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase="http://mirror.osc.edu/mirror" >
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp codebase="./">
   <information>
-    <title>TightVnc Viewer</title>
-      <vendor>GlavSoft LLC.</vendor>
-      <offline-allowed/>
+    <title>TurboVNC Viewer</title>
+    <vendor>The VirtualGL Project</vendor>
   </information>
-  <security>
-   <all-permissions/>
-  </security>
+
   <resources>
-    <j2se version="1.6+"/>
-    <jar href="tightvnc-jviewer.jar" main="true"/>
+    <j2se version="1.6+" java-vm-args="-server -Dsun.java2d.d3d=false" />
+    <jar href="https://apps.awesim.org/assets/wiag/turbovnc/VncViewer.jar" main="true"/>
   </resources>
-  <application-desc main-class="com.glavsoft.viewer.Viewer">
-    <argument>-host={{host}}</argument>
-    <argument>-port={{port}}</argument>
-    <argument>-password={{password}}</argument>
-    <argument>-sshhost={{sshhost}}</argument>
-    <argument>-sshuser={{sshuser}}</argument>
+
+
+  <resources os="Mac OS X">
+    <nativelib href="https://apps.awesim.org/assets/wiag/turbovnc/ljtosx.jar"/>
+  </resources>
+
+  <resources os="Windows" arch="x86">
+    <nativelib href="https://apps.awesim.org/assets/wiag/turbovnc/ljtwin32.jar"/>
+  </resources>
+
+  <resources os="Windows" arch="amd64">
+    <nativelib href="https://apps.awesim.org/assets/wiag/turbovnc/ljtwin64.jar"/>
+  </resources>
+
+  <resources os="Linux" arch="i386">
+    <nativelib href="https://apps.awesim.org/assets/wiag/turbovnc/ljtlinux32.jar"/>
+  </resources>
+
+  <resources os="Linux" arch="amd64">
+    <nativelib href="https://apps.awesim.org/assets/wiag/turbovnc/ljtlinux64.jar"/>
+  </resources>
+
+
+  <security>
+    <all-permissions/>
+  </security>
+
+  <application-desc main-class="com.turbovnc.vncviewer.VncViewer">
+    <argument>-Server={{host}}</argument>
+    <argument>-Port={{port}}</argument>
+    <argument>-Password={{password}}</argument>
+    <argument>-Via={{sshuser}}@{{sshhost}}</argument>
   </application-desc>
 </jnlp>
 {{/ssh?}}
