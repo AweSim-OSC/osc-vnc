@@ -4,51 +4,106 @@ require 'osc/vnc/listenable'
 
 module OSC
   module VNC
+    # Provides a way for developers to create and submit VNC sessions to the
+    # OSC batch systems. Also, developers are now able to submit any server
+    # session to the batch systems whether it is VNC or not following the same
+    # principles as a VNC session.
     class Session
       include OSC::VNC::Listenable
 
-      attr_accessor :batch, :cluster, :headers, :resources, :envvars
-      attr_accessor :xstartup, :xlogout, :outdir, :options
-      attr_accessor :pbsid, :host, :port, :display, :password
+      # @!attribute batch
+      #   @return [String] the type of batch server to use ('oxymoron' or 'compute')
+      attr_accessor :batch
 
-      DEFAULT_ARGS      = {
+      # @!attribute cluster
+      #   @return [String] the cluster to use ('glenn', 'oakley', 'ruby')
+      attr_accessor :cluster
+
+      # @!attribute headers
+      #   @return [Hash] the hash of PBS header attributes for job
+      attr_accessor :headers
+
+      # @!attribute resources
+      #   @return [Hash] the hash of PBS resources requested for job
+      attr_accessor :resources
+
+      # @!attribute envvars
+      #   @return [Hash] the hash of environment variables passed to the job
+      attr_accessor :envvars
+
+      # @!attribute options
+      #   @return [Hash] the hash detailing all the VNC options (see config/script*.yml)
+      attr_accessor :options
+
+      # @!attribute xstartup
+      #   @return [String] the path to the VNC xstartup file
+      attr_accessor :xstartup
+
+      # @!attribute xlogout
+      #   @return [String] the path to the VNC xlogout file (which is run when job finishes)
+      attr_accessor :xlogout
+
+      # @!attribute outdir
+      #   @return [String] the path the VNC output directory
+      attr_accessor :outdir
+
+      # @!attribute pbsid
+      #   @return [String] the PBS id for the submitted VNC job
+      attr_accessor :pbsid
+
+      # @!attribute host
+      #   @return [String] the host specified in the VNC connection information
+      attr_accessor :host
+
+      # @!attribute port
+      #   @return [String] the port specified in the VNC connection information
+      attr_accessor :port
+
+      # @!attribute display
+      #   @return [String] the display port specified in the VNC connection information
+      attr_accessor :display
+
+      # @!attribute password
+      #   @return [String] the password specified in the VNC connection information
+      attr_accessor :password
+
+      DEFAULT_ARGS = {
         # Batch setup information
-        batch: "oxymoron",
-        cluster: "glenn",
+        batch: 'oxymoron',
+        cluster: 'glenn',
         # Batch template options
         xstartup: nil,
         xlogout: nil,
         outdir: ENV['PWD'],
       }
-      DEFAULT_RESOURCES = {}
-      DEFAULT_ENVVARS   = {}
-      DEFAULT_OPTIONS   = {}
 
+      # @param [Hash] args the arguments used to construct a session
+      # @option args [String] :batch ('oxymoron') The type of batch server to run on ('oxymoron' or 'compute')
+      # @option args [String] :cluster ('glenn') The OSC cluster to run on ('glenn', 'oakley', or 'ruby')
       def initialize(args)
         args = DEFAULT_ARGS.merge(args)
 
         # Batch setup information
-        @batch = args[:batch]
-        @cluster = args[:cluster]
-        @headers = args[:headers] || {}
-        @resources = DEFAULT_RESOURCES.merge(args[:resources] || {})
-        @envvars = DEFAULT_ENVVARS.merge(args[:envvars] || {})
+        @batch     = args[:batch]
+        @cluster   = args[:cluster]
+        @headers   = args[:headers] || {}
+        @resources = args[:resources] || {}
+        @envvars   = args[:envvars] || {}
 
         # Batch template args
         @xstartup = args[:xstartup]
-        @xlogout = args[:xlogout]
-        @outdir = args[:outdir]
-        @options = DEFAULT_OPTIONS.merge(args[:options] || {})
+        @xlogout  = args[:xlogout]
+        @outdir   = args[:outdir]
+        @options  = args[:options] || {}
 
         # PBS connection info (typically discovered later)
-        @pbsid = args[:pbsid]
-        @host = args[:host]
-        @port = args[:port]
-        @display = args[:display]
+        @pbsid    = args[:pbsid]
+        @host     = args[:host]
+        @port     = args[:port]
+        @display  = args[:display]
         @password = args[:password]
       end
 
-      # Default headers are generated based on user input
       def headers
         {
           PBS::ATTR[:N] => "VNC_Job",
@@ -58,6 +113,25 @@ module OSC
         }.merge @headers
       end
 
+      def resources
+        {
+        }.merge @resources
+      end
+
+      def envvars
+        {
+        }.merge @envvars
+      end
+
+      def options
+        {
+        }.merge @options
+      end
+
+      # Submit the VNC job to the defined batch server
+      #
+      # @return [Session] the session object
+      # @raise [ArgumentError] if {#xstartup} or {#outdir} do not correspond to actual file system locations
       def run()
         self.xstartup = File.expand_path xstartup
         self.xlogout = File.expand_path xlogout if xlogout
@@ -84,18 +158,26 @@ module OSC
       end
 
       # Get connection info from file generated by PBS batch
-      # job (read template/vnc.mustache)
+      # job (read template/script/vnc.mustache)
+      #
+      # @return [Session] the session object
       def refresh_conn_info
         conn_file = "#{outdir}/#{pbsid}.conn"
         _get_file_conn_info(conn_file)
         self
       end
 
+      # Create a view object for the PBS batch script mustache template
+      # located: template/script/vnc.mustache
+      #
+      # @return [ScriptView] view object used for PBS batch script mustache template
       def script_view
         ScriptView.new(batch: batch, cluster: cluster, xstartup: xstartup,
                        xlogout: xlogout, outdir: outdir, options: options)
       end
 
+
+      private
 
       # Get connection information from a file
       def _get_file_conn_info(file)
