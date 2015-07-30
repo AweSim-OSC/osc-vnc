@@ -85,7 +85,7 @@ module OSC
       # @option args [Hash] :envvars The hash of environment variables passed to the job
       # @option args [String] :xstartup The path to the VNC xstartup file (this is the main script that is run)
       # @option args [String] :xlogout The path the the VNC xlogout file (this script is run when job finishes)
-      # @option args [String] :outdir The path where files are output to
+      # @option args [String] :outdir (current working directory) The path where files are output to
       # @option args [Hash] :options The hash detailing all the VNC options (see config/script*.yml)
       # @option args [String] :pbsid The PBS id for a submitted VNC job (used to get conn info for job already submitted)
       def initialize(args)
