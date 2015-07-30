@@ -3,6 +3,7 @@ require 'socket'
 
 module OSC
   module VNC
+    # Mixin used to add the ability of creating and reading from a TCP server.
     module Listenable
       # Generate a TCP server that listens on random port
       #
