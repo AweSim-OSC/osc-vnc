@@ -80,6 +80,14 @@ module OSC
       # @param [Hash] args the arguments used to construct a session
       # @option args [String] :batch ('oxymoron') The type of batch server to run on ('oxymoron' or 'compute')
       # @option args [String] :cluster ('glenn') The OSC cluster to run on ('glenn', 'oakley', or 'ruby')
+      # @option args [Hash] :headers The hash of PBS header attributes for the job
+      # @option args [Hash] :resources The hash of PBS resources requested for the job
+      # @option args [Hash] :envvars The hash of environment variables passed to the job
+      # @option args [String] :xstartup The path to the VNC xstartup file (this is the main script that is run)
+      # @option args [String] :xlogout The path the the VNC xlogout file (this script is run when job finishes)
+      # @option args [String] :outdir The path where files are output to
+      # @option args [Hash] :options The hash detailing all the VNC options (see config/script*.yml)
+      # @option args [String] :pbsid The PBS id for a submitted VNC job (used to get conn info for job already submitted)
       def initialize(args)
         args = DEFAULT_ARGS.merge(args)
 
@@ -161,6 +169,7 @@ module OSC
       # job (read template/script/vnc.mustache)
       #
       # @return [Session] the session object
+      # @raise [RuntimeError] if connection file does not exist or contain required information (i.e.: host, port, display, password)
       def refresh_conn_info
         conn_file = "#{outdir}/#{pbsid}.conn"
         _get_file_conn_info(conn_file)
@@ -171,6 +180,7 @@ module OSC
       # located: template/script/vnc.mustache
       #
       # @return [ScriptView] view object used for PBS batch script mustache template
+      # @see ScriptView
       def script_view
         ScriptView.new(batch: batch, cluster: cluster, xstartup: xstartup,
                        xlogout: xlogout, outdir: outdir, options: options)
