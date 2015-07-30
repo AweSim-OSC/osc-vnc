@@ -2,6 +2,9 @@ require 'mustache'
 
 module OSC
   module VNC
+    # Provides a view for a variety of connection information templates in
+    # templates/conn. Extra options can be passed to this view and accessed
+    # directly in the mustache templates.
     class ConnView
       attr_reader :session
 
@@ -10,7 +13,6 @@ module OSC
       end
 
       Dir.glob("#{CONN_TEMPLATE_PATH}/*.mustache") do |template|
-        basename = File.basename(template)
         type = File.basename(template, ".mustache")
 
         define_method(type.prepend("to_").to_sym) do |args = {}|
