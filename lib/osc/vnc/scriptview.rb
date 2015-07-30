@@ -48,7 +48,7 @@ module OSC
       # Turn all key-value pairs in @view_data into methods
       # @api private
       def method_missing(method_name, *arguments, &block)
-        @view_data.fetch(method_name) { |k| @view_data.fetch(method_name.to_s) { super } }
+        @view_data.fetch(method_name) { @view_data.fetch(method_name.to_s) { super } }
       end
 
       # This method follows from #method_missing
