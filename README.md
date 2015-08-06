@@ -75,7 +75,7 @@ Java installed:
 
 ```ruby
 conn_info = OSC::VNC::ConnView.new(session: session)
-conn_info.to_jnlp
+conn_info.render(:jnlp)
 ```
 
 ### VNC Server options

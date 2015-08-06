@@ -19,42 +19,47 @@ module OSC
       # @option args [String] :cluster the OSC cluster the job will run on ('glenn', 'oakley', 'ruby')
       # @option args [Hash] :options the hash describing any other options utilized by the batch script template
       def initialize(args = {})
-        # Merge all arguments passed in as data for the view and template
-        @view_data = {}
-        @view_data[:xstartup] = args[:xstartup]
-        @view_data[:xlogout]  = args[:xlogout]
-        @view_data[:outdir]   = args[:outdir]
-        @view_data[:batch]    = args[:batch]
-        @view_data[:cluster]  = args[:cluster]
-        @view_data.merge!(args[:options] || {})
+        # Merge all arguments passed in as data for the view and template.
+        @view_context = {}
+        @view_context[:xstartup] = args[:xstartup]
+        @view_context[:xlogout]  = args[:xlogout]
+        @view_context[:outdir]   = args[:outdir]
+        @view_context[:batch]    = args[:batch]
+        @view_context[:cluster]  = args[:cluster]
+        @view_context.merge!(args[:options] || {})
 
-        # Read in VNC specific args for given batch system & cluster
+        # Read in VNC specific args for given batch system & cluster.
         script_cfg = YAML.load_file("#{CONFIG_PATH}/script.yml")
         raise ArgumentError, "invalid batch system" unless script_cfg.include? batch
         cluster_cfg = YAML.load_file("#{CONFIG_PATH}/script_cluster.yml")
         raise ArgumentError, "invalid cluster system" unless cluster_cfg.include? cluster
 
         # Merge in these args keeping user args as priority
-        @view_data = script_cfg[batch].merge @view_data
-        @view_data = cluster_cfg[cluster].merge @view_data
+        @view_context = script_cfg[batch].merge @view_context
+        @view_context = cluster_cfg[cluster].merge @view_context
       end
 
-      # Based on the xstartup path, also display directory to this file
-      # @api private
+      # Based on the xstartup path, also display directory to this file.
       def xstartup_dir
         File.dirname xstartup
       end
 
-      # Turn all key-value pairs in @view_data into methods
-      # @api private
+      # See if the method call exists as a key in @view_context.
+      #
+      # @param method_name the method name called
+      # @param arguments the arguments to the call
+      # @param block an optional block for the call
       def method_missing(method_name, *arguments, &block)
-        @view_data.fetch(method_name) { @view_data.fetch(method_name.to_s) { super } }
+        @view_context.fetch(method_name) { @view_context.fetch(method_name.to_s) { super } }
       end
 
-      # This method follows from #method_missing
-      # @api private
-      def respond_to?(method_name, include_private = false)
-        @view_data.include?(method_name) || @view_data.include?(method_name.to_s) || super
+      # Checks if the method responds to an instance method, or is able to
+      # proxy it to @view_context.
+      #
+      # @param method_name the method name to check
+      # @return [Boolean]
+      def respond_to_missing?(method_name, include_private = false)
+        @view_context.include?(method_name) || @view_context.include?(method_name.to_s) || super
       end
     end
   end

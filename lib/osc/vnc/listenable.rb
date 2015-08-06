@@ -5,7 +5,7 @@ module OSC
   module VNC
     # Mixin that adds the ability to create and read from a TCP server.
     module Listenable
-      # Generate a TCP server that listens on a random port
+      # Generate a TCP server that listens on a random port.
       #
       # @return [TCPServer] ruby TCPServer object listening on random port
       def create_listen
@@ -20,7 +20,7 @@ module OSC
         server
       end
 
-      # Read the data received by the TCP server
+      # Read the data received by the TCP server.
       #
       # @param [Hash] args the arguments to read data received by TCP server with
       # @option args [TCPServer] :server the TCP server that is currently listening
@@ -34,7 +34,7 @@ module OSC
 
       private
 
-      # Get random number form 40,000 to 50,000
+      # Get random number form 40,000 to 50,000.
       #
       # @return [Fixnum] a random number from 40,000 to 50,000
       def _get_port

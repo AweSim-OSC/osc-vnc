@@ -1,4 +1,4 @@
-{{^ssh?}}
+{{^ssh_tunnel?}}
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" codebase="http://mirror.osc.edu/mirror" >
   <information>
@@ -22,8 +22,8 @@
       <argument>{{password}}</argument>
   </application-desc>
 </jnlp>
-{{/ssh?}}
-{{#ssh?}}
+{{/ssh_tunnel?}}
+{{#ssh_tunnel?}}
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" codebase="http://mirror.osc.edu/mirror" >
   <information>
@@ -46,4 +46,4 @@
     <argument>-sshuser={{sshuser}}</argument>
   </application-desc>
 </jnlp>
-{{/ssh?}}
+{{/ssh_tunnel?}}

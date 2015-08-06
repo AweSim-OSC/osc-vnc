@@ -5,13 +5,13 @@ module OSC
   # The main namespace for osc-vnc. Provides the ability to submit and read back
   # the connection information for a VNC job on the OSC clusters.
   module VNC
-    # Path to configuration yml files
+    # Path to configuration yml files.
     CONFIG_PATH = File.dirname(__FILE__) + "/../../config"
 
-    # Patch to PBS script template
+    # Patch to PBS script template.
     SCRIPT_TEMPLATE_PATH = File.dirname(__FILE__) + "/../../templates/script"
 
-    # Path to different connection information view templates
+    # Path to different connection information view templates.
     CONN_TEMPLATE_PATH = File.dirname(__FILE__) + "/../../templates/conn"
   end
 end
