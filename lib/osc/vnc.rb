@@ -1,19 +1,22 @@
 require 'pbs'
 
+# The namespace used for OSC gems.
 module OSC
+  # The main namespace for osc-vnc. Provides the ability to submit and read back
+  # the connection information for a VNC job on the OSC clusters.
   module VNC
-    # Config path
+    # Path to configuration yml files
     CONFIG_PATH = File.dirname(__FILE__) + "/../../config"
 
-    # Template path
+    # Patch to PBS script template
     SCRIPT_TEMPLATE_PATH = File.dirname(__FILE__) + "/../../templates/script"
 
-    # Views path
+    # Path to different connection information view templates
     CONN_TEMPLATE_PATH = File.dirname(__FILE__) + "/../../templates/conn"
   end
 end
 
-require 'osc/vnc/version'
-require 'osc/vnc/session'
-require 'osc/vnc/scriptview'
-require 'osc/vnc/connview'
+require_relative 'vnc/version'
+require_relative 'vnc/session'
+require_relative 'vnc/scriptview'
+require_relative 'vnc/connview'

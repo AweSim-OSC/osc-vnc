@@ -67,6 +67,7 @@ module OSC
       #   @return [String] the password specified in the VNC connection information
       attr_accessor :password
 
+      # The default arguments used when initializing a session
       DEFAULT_ARGS = {
         # Batch setup information
         batch: 'oxymoron',
