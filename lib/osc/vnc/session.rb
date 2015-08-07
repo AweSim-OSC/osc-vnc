@@ -19,21 +19,17 @@ module OSC
       #   @return [String] the cluster to use ('glenn', 'oakley', 'ruby')
       attr_accessor :cluster
 
-      # @!attribute headers
-      #   @return [Hash] the hash of PBS header attributes for job
-      attr_accessor :headers
+      # @!attribute [w] headers
+      attr_writer :headers
 
-      # @!attribute resources
-      #   @return [Hash] the hash of PBS resources requested for job
-      attr_accessor :resources
+      # @!attribute [w] resources
+      attr_writer :resources
 
-      # @!attribute envvars
-      #   @return [Hash] the hash of environment variables passed to the job
-      attr_accessor :envvars
+      # @!attribute [w] envvars
+      attr_writer :envvars
 
-      # @!attribute options
-      #   @return [Hash] the hash detailing all the VNC options (see config/script*.yml)
-      attr_accessor :options
+      # @!attribute [w] options
+      attr_writer :options
 
       # @!attribute xstartup
       #   @return [String] the path to the VNC xstartup file
@@ -113,6 +109,9 @@ module OSC
         @password = args[:password]
       end
 
+      # The hash of PBS header attributes for the job.
+      #
+      # @return [Hash] hash of headers merged with default headers
       def headers
         {
           PBS::ATTR[:N] => "VNC_Job",
@@ -122,16 +121,25 @@ module OSC
         }.merge @headers
       end
 
+      # The hash of PBS resources requested for the job.
+      #
+      # @return [Hash] hash of resources merged with default resources
       def resources
         {
         }.merge @resources
       end
 
+      # The hash of environment variables passed to the job.
+      #
+      # @return [Hash] hash of environment variables merged with default environment variables
       def envvars
         {
         }.merge @envvars
       end
 
+      # The hash detailing all the VNC options (see config/script*.yml).
+      #
+      # @return [Hash] hash of VNC options merged with default options
       def options
         {
         }.merge @options
@@ -149,7 +157,6 @@ module OSC
         raise ArgumentError, "output directory is a file" if File.file?(outdir)
 
         # Create tcp listen server
-        listen_server = nil
         listen_server = _create_listen_server if script_view.tcp_server?
 
         # Make output directory if it doesn't already exist
@@ -201,7 +208,7 @@ module OSC
       def _create_listen_server
         listen_server = create_listen
         _, port, host, _ = listen_server.addr(:hostname)
-        envvars.merge! LISTEN_HOST: host, LISTEN_PORT: port
+        @envvars.merge! LISTEN_HOST: host, LISTEN_PORT: port
         listen_server
       end
 
