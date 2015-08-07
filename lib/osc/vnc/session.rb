@@ -215,8 +215,8 @@ module OSC
       # Get connection information from a TCP listening server.
       def _get_listen_conn_info(server)
         # Wait until VNC conn info is created by PBS batch script
-        # Timeout after 30 seconds if no info is sent
-        Timeout::timeout(30) { _parse_conn_info read_listen(server: server) }
+        # Timeout after 60 seconds if no info is sent
+        Timeout::timeout(60) { _parse_conn_info read_listen(server: server) }
       end
 
       # Parse out connection info from a string.
