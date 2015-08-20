@@ -19,6 +19,10 @@ module OSC
       #   @return [String] the cluster to use ('glenn', 'oakley', 'ruby')
       attr_accessor :cluster
 
+      # @!attribute pbs_config
+      #   @return [Hash] the overriding configuration used to setup the PBS connection
+      attr_accessor :pbs_config
+
       # @!attribute [w] headers
       attr_writer :headers
 
@@ -77,6 +81,7 @@ module OSC
       # @param [Hash] args the arguments used to construct a session
       # @option args [String] :batch ('oxymoron') The type of batch server to run on ('oxymoron' or 'compute')
       # @option args [String] :cluster ('glenn') The OSC cluster to run on ('glenn', 'oakley', or 'ruby')
+      # @option args [Hash] :pbs_config The hash to override PBS connection information
       # @option args [Hash] :headers The hash of PBS header attributes for the job
       # @option args [Hash] :resources The hash of PBS resources requested for the job
       # @option args [Hash] :envvars The hash of environment variables passed to the job
@@ -89,11 +94,12 @@ module OSC
         args = DEFAULT_ARGS.merge(args)
 
         # Batch setup information
-        @batch     = args[:batch]
-        @cluster   = args[:cluster]
-        @headers   = args[:headers] || {}
-        @resources = args[:resources] || {}
-        @envvars   = args[:envvars] || {}
+        @batch      = args[:batch]
+        @cluster    = args[:cluster]
+        @pbs_config = args[:pbs_config] || {}
+        @headers    = args[:headers] || {}
+        @resources  = args[:resources] || {}
+        @envvars    = args[:envvars] || {}
 
         # Batch template args
         @xstartup = args[:xstartup]
@@ -163,7 +169,7 @@ module OSC
         FileUtils.mkdir_p(outdir)
 
         # Connect to server and submit job with proper PBS attributes
-        c = PBS::Conn.new(cluster: cluster, batch: batch)
+        c = PBS::Conn.new(cluster: cluster, batch: batch, config: pbs_config)
         j = PBS::Job.new(conn: c)
         self.pbsid = j.submit(string: script_view.render, headers: headers, resources: resources, envvars: envvars, qsub: true).id
 
