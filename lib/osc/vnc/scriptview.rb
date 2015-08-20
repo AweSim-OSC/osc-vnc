@@ -35,8 +35,8 @@ module OSC
         raise ArgumentError, "invalid cluster system" unless cluster_cfg.include? cluster
 
         # Merge in these args keeping user args as priority
-        @view_context = script_cfg[batch].merge @view_context
-        @view_context = cluster_cfg[cluster].merge @view_context
+        @view_context = script_cfg.fetch(batch, {}).merge @view_context
+        @view_context = cluster_cfg.fetch(cluster, {}).merge @view_context
       end
 
       # Based on the xstartup path, also display directory to this file.
