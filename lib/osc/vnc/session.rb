@@ -11,25 +11,22 @@ module OSC
     class Session
       include OSC::VNC::Listenable
 
-      # @!attribute batch
-      #   @return [Batch] the batch server to use
+      # @return [Batch] the batch server to use
       attr_accessor :batch
 
-      # @!attribute [w] headers
-      # @!attribute [w] resources
-      # @!attribute [w] envvars
-      # @!attribute [w] options
-      attr_writer :headers, :resources, :envvars, :options
+      # @return [String] the path to the VNC xstartup file
+      attr_accessor :xstartup
 
-      # @!attribute xstartup
-      #   @return [String] the path to the VNC xstartup file
-      # @!attribute xlogout
-      #   @return [String] the path to the VNC xlogout file (which is run when job finishes)
-      # @!attribute outdir
-      #   @return [String] the path the VNC output directory
-      # @!attribute pbsid
-      #   @return [String] the PBS id for the submitted VNC job
-      attr_accessor :xstartup, :xlogout, :outdir, :pbsid
+      # @return [String] the path to the VNC xlogout file (which is run when job finishes)
+      attr_accessor :xlogout
+
+      # @return [String] the path the VNC output directory
+      attr_accessor :outdir
+
+      # @return [String] the PBS id for the submitted VNC job
+      attr_accessor :pbsid
+
+      attr_writer :headers, :resources, :envvars, :options
 
       # @param [Hash] args the arguments used to construct a session
       # @option args [Batch] :batch ('oxymoron') The batch server to run on ('glenn', 'oakley', 'ruby', 'oxymoron')

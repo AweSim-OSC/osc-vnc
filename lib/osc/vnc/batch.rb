@@ -2,6 +2,9 @@ require 'yaml'
 
 module OSC
   module VNC
+    # Allows developers to choose and easily modify the batch server they
+    # submit their VNC session to. This is inherited from <tt>PBS::Batch</tt>
+    # to provide a superset of attributes required by <tt>OSC::VNC</tt>.
     class Batch < PBS::Batch
       # Initialize the batch server.
       #
@@ -22,22 +25,38 @@ module OSC
         @batch_config.merge! cluster_cfg.fetch(cluster, {})
       end
 
+      # The cluster the session will run on. If not specified use the batch
+      # name as the cluster.
+      #
+      # @return [String] name of the cluster session will run on
       def cluster
         @batch_config[:cluster] || name
       end
 
+      # The fonts to use for the vnc server.
+      #
+      # @return [String] comma delimited list of fonts
       def fonts
         @batch_config[:fonts]
       end
 
+      # The bash command to load the turbovnc module.
+      #
+      # @return [String] bash command for loading turbovnc module
       def load_turbovnc
         @batch_config[:load_turbovnc]
       end
 
+      # Whether this batch server runs jobs on shared nodes.
+      #
+      # @return [Boolean] whether we will run on a shared node
       def shared?
         @batch_config[:batch_type] == 'shared'
       end
 
+      # Whether this batch server has multiple clusters to choose from.
+      #
+      # @return [Boolean] whether we can choose the cluster
       def multicluster?
         @batch_config[:multicluster] == true
       end

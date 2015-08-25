@@ -8,19 +8,20 @@ module OSC
     class ConnView < Mustache
       self.template_path = CONN_TEMPLATE_PATH
 
-      # @!attribute [r] host
-      #   @return [Session] the session object with connection information.
+      # @return [Session] the session object with connection information
       attr_reader :session
 
-      # @!attribute [r] host
-      #   @return [String] the host specified in the VNC connection information
-      # @!attribute [r] port
-      #   @return [String] the port specified in the VNC connection information
-      # @!attribute [r] display
-      #   @return [String] the display port specified in the VNC connection information
-      # @!attribute [r] password
-      #   @return [String] the password specified in the VNC connection information
-      attr_reader :host, :port, :display, :password
+      # @return [String] the host specified in the VNC connection information
+      attr_reader :host
+
+      # @return [String] the port specified in the VNC connection information
+      attr_reader :port
+
+      # @return [String] the display port specified in the VNC connection information
+      attr_reader :display
+
+      # @return [String] the password specified in the VNC connection information
+      attr_reader :password
 
       # @param [Hash] args the arguments used to construct a connection information view.
       # @option args [Session] :session The session object with the connection information

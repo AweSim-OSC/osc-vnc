@@ -12,8 +12,7 @@ module OSC
 
       self.template_file = "#{SCRIPT_TEMPLATE_PATH}/vnc.mustache"
 
-      # @!attribute batch
-      #   @return [Batch] the type of batch server to use
+      # @return [Batch] the type of batch server to use
       attr_reader :batch
 
       # Constructs a new view for the PBS batch script template
@@ -44,6 +43,8 @@ module OSC
       end
 
       # Based on the xstartup path, also display directory to this file.
+      #
+      # @return [String] path to xstartup directory
       def xstartup_dir
         File.dirname xstartup
       end
