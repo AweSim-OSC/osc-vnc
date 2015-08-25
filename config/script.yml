@@ -1,6 +1,6 @@
 # Batch script options depending on batch type
 
-compute: &DEFAULT_VIEW
+default: &DEFAULT_VIEW
     name: vnc
     vnc?: true
     geom: 800x600
@@ -13,7 +13,7 @@ compute: &DEFAULT_VIEW
     ssh_tunnel?: true
     tcp_server?: false
 
-oxymoron:
+shared:
     <<: *DEFAULT_VIEW
     idletimeout: 300
     otp?: true
