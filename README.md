@@ -23,11 +23,10 @@ $ bundle install --local
 For all cases we will need to create a new VNC session object. To create a VNC
 session object you need to supply it the required information:
 
-* the batch system you will submit it to
-* the cluster it will run on
+* a batch object with the batch server name and the cluster you will submit it to
 * the `xstartup` script that will run when the VNC server is launched
 
-A bare bones object would be:
+A bare bones setup would be:
 
 ```ruby
 batch = OSC::VNC::Batch.new(name: 'oxymoron', cluster: 'oakley')
