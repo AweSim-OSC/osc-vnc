@@ -30,7 +30,8 @@ session object you need to supply it the required information:
 A bare bones object would be:
 
 ```ruby
-session = OSC::VNC::Session.new(batch: 'oxymoron', cluster: 'oakley', xstartup: '/path/to/script')
+batch = OSC::VNC::Batch.new(name: 'oxymoron', cluster: 'oakley')
+session = OSC::VNC::Session.new(batch: batch, xstartup: '/path/to/script')
 ```
 
 In most cases we will want to supply more options for finer control of the
@@ -57,9 +58,9 @@ outdir = "/output/path"
 xstartup = "/path/to/script"
 
 # We now create our session
-session = OSC::VNC::Session.new(batch: 'oxymoron', cluster: 'oakley',
-    xstartup: xstartup, outdir: outdir, headers: headers, resources: resources,
-    envvars: envvars)
+batch = OSC::VNC::Batch.new(name: 'oxymoron', cluster: 'oakley')
+session = OSC::VNC::Session.new(batch: batch, xstartup: xstartup,
+    outdir: outdir, headers: headers, resources: resources, envvars: envvars)
 ```
 
 To submit the VNC session, use the `#run` instance method on the object:
@@ -84,10 +85,11 @@ You can specify different options when running a vnc session. When choosing the
 batch system to submit the job to `compute` vs `oxymoron`, a default set of
 options found in [config/script.yml](config/script.yml) are applied to your job. When
 choosing a cluster `glenn`, `oakley`, or `ruby` the cluster specific set of
-default options are located in [config/script_cluster.yml](config/script_cluster.yml).
+default options are located in [config/cluster.yml](config/cluster.yml).
 
 You can alter these options when creating a session by specifying them as a
-hash in the `:options` key when initializing the object. An example:
+hash in the `:options` key when initializing the object or modifying the batch
+object if they are cluster specific. An example:
 
 ```ruby
 # Specify your personal VNC session options to override defaults
@@ -100,9 +102,11 @@ options = {
 
 
 # We now create our session, note that we now append an `options` parameter
-session = OSC::VNC::Session.new(batch: 'oxymoron', cluster: 'oakley',
-    xstartup: xstartup, outdir: outdir, headers: headers, resources: resources,
-    envvars: envvars, options: options)
+batch = OSC::VNC::Batch.new(name: 'oxymoron', cluster: 'oakley',
+    load_turbovnc: 'module load turbovnc/1.2.90')
+session = OSC::VNC::Session.new(batch: batch xstartup: xstartup,
+    outdir: outdir, headers: headers, resources: resources, envvars: envvars,
+    options: options)
 ```
 
 ### xstartup
