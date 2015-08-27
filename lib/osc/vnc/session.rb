@@ -79,6 +79,7 @@ module OSC
         if batch.shared?
           res[:nodes] = "1:ppn=1"
           res[:nodes] += ":#{batch.cluster}" if batch.multicluster?
+          res[:walltime] = "24:00:00"
         end
         res.merge @resources
       end
