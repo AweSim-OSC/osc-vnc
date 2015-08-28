@@ -63,12 +63,14 @@ module OSC
       #
       # @return [Hash] hash of headers merged with default headers
       def headers
-        {
+        h = {
           PBS::ATTR[:N] => "VNC_Job",
           PBS::ATTR[:o] => "#{outdir}/$PBS_JOBID.output",
           PBS::ATTR[:j] => "oe",
           PBS::ATTR[:S] => "/bin/bash"
         }.merge @headers
+        h[PBS::ATTR[:N]] = "#{ENV['APP_TOKEN']}/#{h[PBS::ATTR[:N]]}" if ENV['APP_TOKEN']
+        h
       end
 
       # The hash of PBS resources requested for the job.
