@@ -75,13 +75,13 @@ module OSC
       #
       # @return [Hash] hash of resources merged with default resources
       def resources
-        res = {}
+        r = {}
         if batch.shared?
-          res[:nodes] = "1:ppn=1"
-          res[:nodes] += ":#{batch.cluster}" if batch.multicluster?
-          res[:walltime] = "24:00:00"
+          r[:nodes] = "1:ppn=1"
+          r[:nodes] += ":#{batch.cluster}" if batch.multicluster?
+          r[:walltime] = "24:00:00"
         end
-        res.merge @resources
+        r.merge @resources
       end
 
       # The hash of environment variables passed to the job.
