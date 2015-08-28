@@ -18,5 +18,4 @@ shared:
     idletimeout: 300
     otp?: true
     vncauth?: false
-    ssh_tunnel?: false
     tcp_server?: true
