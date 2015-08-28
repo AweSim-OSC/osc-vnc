@@ -160,7 +160,9 @@ module OSC
       def _write_listen_conn_info(server)
         # Wait until VNC conn info is created by PBS batch script
         # Timeout after 60 seconds if no info is sent
-        Timeout::timeout(60) { File.open(conn_file, 'w') { |f| f.puts read_listen(server: server) }}
+        Timeout::timeout(60) do
+          File.open(conn_file, 'w', 0600) { |f| f.puts read_listen(server: server) }
+        end
       end
     end
   end
