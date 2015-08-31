@@ -14,12 +14,26 @@ export VNC_OUTFILE={{outdir}}/${PBS_JOBID}.conn
 {{{load_turbovnc}}}
 
 {{#vncauth?}}
-# Generate password for VNC
-VNC_PASSWORD=$(mkpasswd -s 0 -l 8)  # passwords truncated to 8 letters
-echo ${VNC_PASSWORD} | vncpasswd -f > ${VNC_PASSFILE}
-chmod 600 ${VNC_PASSFILE}
+# Allow the ability to dynamically change VNC password
+function change_passwd {
+    # Generate password for VNC
+    PASSWORD=$(mkpasswd -s 0 -l 8)  # passwords truncated to 8 letters
+    echo ${PASSWORD} | vncpasswd -f > ${VNC_PASSFILE}
+    chmod 600 ${VNC_PASSFILE}
+}
+change_passwd
 {{/vncauth?}}
 {{/vnc?}}
+
+# Function that creates a connection information file
+function create_connfile {
+    # Output information
+    echo "Host: ${HOST}" > ${VNC_OUTFILE}
+    echo "Port: ${HOST_PORT}" >> ${VNC_OUTFILE}
+    echo "Pass: ${PASSWORD}" >> ${VNC_OUTFILE}
+    echo "Display: ${DISPLAY_PORT}" >> ${VNC_OUTFILE}
+    chmod 600 ${VNC_OUTFILE}
+}
 
 # Clean up script run when "vncserver" finishes or dies prematurely
 # Note: must be defined after `module load`
@@ -68,17 +82,13 @@ HOST_PORT=$((5900+DISPLAY_PORT))
 
 {{#otp?}}
 # Parse output for password
-OTP_PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
+PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
 {{/otp?}}
 {{/vnc?}}
 
 {{^vnc?}}
 # Create logfile
 > ${VNC_LOGFILE}
-
-# Initialize env vars
-DISPLAY_PORT=${DISPLAY#:}
-# HOST_PORT=${HOST_PORT:-"0"}
 
 {{#xinit}}
 # Run developer supplied xinit script
@@ -119,22 +129,19 @@ function public_hostname {
 HOST=$(public_hostname)
 {{/ssh_tunnel?}}
 
-# Output information
-echo "Host: ${HOST}" > ${VNC_OUTFILE}
-echo "Port: ${HOST_PORT}" >> ${VNC_OUTFILE}
-{{#vnc?}}
-{{#vncauth?}}
-echo "Pass: ${VNC_PASSWORD}" >> ${VNC_OUTFILE}
-{{/vncauth?}}
-{{#otp?}}
-echo "Pass: ${OTP_PASSWORD}" >> ${VNC_OUTFILE}
-{{/otp?}}
-{{/vnc?}}
-{{^vnc?}}
-echo "Pass: ${PASSWORD}" >> ${VNC_OUTFILE}
-{{/vnc?}}
-echo "Display: ${DISPLAY_PORT}" >> ${VNC_OUTFILE}
-chmod 600 ${VNC_OUTFILE}
+{{#vnc?}}{{#vncauth?}}
+# Check for authenticated user connections to VNC server then change password
+while read -r line; do
+    if [[ "${line}" == *"Full-control authentication enabled for"* ]]; then
+        change_passwd
+        create_connfile
+        echo "Changing VNC password..." >> ${VNC_LOGFILE}
+    fi
+done < <(tail -f ${VNC_LOGFILE}) &
+{{/vncauth?}}{{/vnc?}}
+
+# Create the connection file
+create_connfile
 
 {{#tcp_server?}}
 # Send connection information over a TCP connection
@@ -143,14 +150,9 @@ nc ${LISTEN_HOST} ${LISTEN_PORT} < ${VNC_OUTFILE}
 rm -f ${VNC_OUTFILE}
 {{/tcp_server?}}
 
-{{#vnc?}}
-# Wait for vnc server process to finish
-while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
-{{/vnc?}}
-{{^vnc?}}
-# Wait for script process to finish
-while [ -e /proc/${SCRIPT_PID} ]; do sleep 0.1; done
-{{/vnc?}}
+# Wait for main process to finish
+MAIN_PID={{#vnc?}}${VNC_PID}{{/vnc?}}{{^vnc?}}${SCRIPT_PID}{{/vnc?}}
+while [ -e /proc/${MAIN_PID} ]; do sleep 0.1; done
 
 # Exit cleanly
 exit 0
