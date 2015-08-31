@@ -18,7 +18,8 @@ export VNC_OUTFILE={{outdir}}/${PBS_JOBID}.conn
 function change_passwd {
     # Generate password for VNC
     PASSWORD=$(mkpasswd -s 0 -l 8)  # passwords truncated to 8 letters
-    echo ${PASSWORD} | vncpasswd -f > ${VNC_PASSFILE}
+    SPASSWORD=${SPASSWORD:-$(mkpasswd -s 0 -l 8)}
+    printf "${PASSWORD}\n${SPASSWORD}" | vncpasswd -f > ${VNC_PASSFILE}
     chmod 600 ${VNC_PASSFILE}
 }
 change_passwd
@@ -31,6 +32,7 @@ function create_connfile {
     echo "Host: ${HOST}" > ${VNC_OUTFILE}
     echo "Port: ${HOST_PORT}" >> ${VNC_OUTFILE}
     echo "Pass: ${PASSWORD}" >> ${VNC_OUTFILE}
+    echo "SPass: ${SPASSWORD}" >> ${VNC_OUTFILE}
     echo "Display: ${DISPLAY_PORT}" >> ${VNC_OUTFILE}
     chmod 600 ${VNC_OUTFILE}
 }

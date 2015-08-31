@@ -23,6 +23,9 @@ module OSC
       # @return [String] the password specified in the VNC connection information
       attr_reader :password
 
+      # @return [String] the shared password specified in the VNC connection information
+      attr_reader :spassword
+
       # @param [Hash] args the arguments used to construct a connection information view.
       # @option args [Session] :session The session object with the connection information
       def initialize(args)
@@ -94,7 +97,7 @@ module OSC
 
       # Parse out connection info from a string.
       def _parse(string)
-        {:@host => 'Host', :@port => 'Port', :@display => 'Display', :@password => 'Pass'}.each do |key, value|
+        {:@host => 'Host', :@port => 'Port', :@display => 'Display', :@password => 'Pass', :@spassword => 'SPass'}.each do |key, value|
           match = /^#{value}: (.*)$/.match(string)
           raise InvalidConnInfo, "#{key} not specified by batch job" unless match
           instance_variable_set(key, match[1].empty? ? nil : match[1])
