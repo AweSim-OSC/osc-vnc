@@ -78,9 +78,10 @@ conn_info = OSC::VNC::ConnView.new(session: session)
 conn_info.render(:jnlp)
 ```
 
-*Note: Once someone successfully authenticates with the VNC server the password
-will change if using `vncauth` form of authentication. So it is imperative that
-you run `ConnView#refresh` to update the connection information.*
+**Note:** Once someone successfully authenticates with the VNC server the
+password will change if using `vncauth` form of authentication. So it is
+imperative that you run `ConnView#refresh` to update the connection
+information.
 
 ### VNC Server options
 
