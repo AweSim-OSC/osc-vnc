@@ -54,18 +54,18 @@ trap clean_up TERM EXIT
 # Start up vnc server and create output
 # If two servers start simultaneously one will fail, loop until it succeeds
 i=0
-while [[ -z "${VNC_PID}" && "$i" -lt 30 ]]; do
+while [[ -z ${VNC_PID} && ${i} -lt 30 ]]; do
     # Clean up any failed vnc sessions that didn't clean themselves up
     vncserver -list | awk '/^:/{display[$1] = $2} END{for(key in display) { if( system( "[ ! -e /proc/" display[key] " ]" ) == 0 ) { system( "vncserver -kill " key ) } }}'
     # Run the vncserver
     VNC_OUT=$(vncserver -name {{name}} -geometry {{geom}} -dpi {{dpi}} -fp {{fonts}} -{{^otp?}}no{{/otp?}}otp {{#vncauth?}}-rfbauth ${VNC_PASSFILE}{{/vncauth?}}{{^vncauth?}}-novncauth{{/vncauth?}} -{{^pam?}}no{{/pam?}}pam -nohttpd -idletimeout {{idletimeout}} -log ${VNC_LOGFILE} -noxstartup {{{extra_args}}} 2>&1)
     VNC_PID=$(pgrep -s 0 Xvnc)  # Get process id
     # VNC couldn't find display so died
-    if [ -z "${VNC_PID}" ]; then
+    if [[ -z ${VNC_PID} ]]; then
         sleep 0.$(($RANDOM % 100))s # Sleep between 0-1 seconds
     fi
     # Sometimes VNC will hang if it fails to find working display
-    if [[ ! -z "${VNC_PID}" && "${VNC_OUT}" == *"Fatal server error"* ]]; then
+    if [[ ! -z ${VNC_PID} && ${VNC_OUT} =~ "Fatal server error" ]]; then
         kill -9 ${VNC_PID}
         unset VNC_PID
     fi
@@ -74,7 +74,7 @@ done
 echo "${VNC_OUT}"
 
 # Make sure it is running otherwise exit with error code 1
-if [ -z "${VNC_PID}" ]; then
+if [[ -z ${VNC_PID} ]]; then
     exit 1
 fi
 
@@ -134,7 +134,7 @@ HOST=$(public_hostname)
 {{#vnc?}}{{#vncauth?}}
 # Check for authenticated user connections to VNC server then change password
 while read -r line; do
-    if [[ "${line}" == *"Full-control authentication enabled for"* ]]; then
+    if [[ ${line} =~ "Full-control authentication enabled for" ]]; then
         change_passwd
         create_connfile
         echo "Changing VNC password..." >> ${VNC_LOGFILE}
