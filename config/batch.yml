@@ -12,3 +12,6 @@ ruby:
 oxymoron:
     :batch_type: shared
     :multicluster: true
+quick:
+    :batch_type: shared
+    :multicluster: true
