@@ -1,0 +1,7 @@
+export VNC_LOGFILE={{outdir}}/${PBS_JOBID}.log
+{{#tcp_server?}}
+export VNC_OUTFILE=$(mktemp)
+{{/tcp_server?}}
+{{^tcp_server?}}
+export VNC_OUTFILE={{outdir}}/${PBS_JOBID}.conn
+{{/tcp_server?}}

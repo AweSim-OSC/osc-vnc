@@ -29,8 +29,10 @@ session object you need to supply it the required information:
 A bare bones setup would be:
 
 ```ruby
-batch = OSC::VNC::Batch.new(name: 'oxymoron', cluster: 'oakley')
-session = OSC::VNC::Session.new(batch: batch, xstartup: '/path/to/script')
+job = PBS::Job.new(conn: PBS::Conn.batch('quick'))
+script = OSC::VNC::ScriptView.new(:vnc, 'oakley', xstartup: '/path/to/script', outdir: ENV['PWD'])
+
+session = OSC::VNC::Session.new(job, script)
 ```
 
 In most cases we will want to supply more options for finer control of the
@@ -49,23 +51,12 @@ resources = { walltime: "24:00:00" }
 
 # Environment variables can also be passed to the script
 envvars = { DATAFILE: "/path/to/datafile" }
-
-# It is also beneficial to define an output directory
-outdir = "/output/path"
-
-# Define our xstartup script
-xstartup = "/path/to/script"
-
-# We now create our session
-batch = OSC::VNC::Batch.new(name: 'oxymoron', cluster: 'oakley')
-session = OSC::VNC::Session.new(batch: batch, xstartup: xstartup,
-    outdir: outdir, headers: headers, resources: resources, envvars: envvars)
 ```
 
-To submit the VNC session, use the `#run` instance method on the object:
+To submit the VNC session, use the `#submit` instance method on the object:
 
 ```ruby
-session.run
+session.submit(headers: headers, resources: resources, envvars: envvars)
 ```
 
 After enough time has passed and the session is runninq in the batch system
@@ -74,7 +65,7 @@ information. The most user-friendly being the `*.jnlp` format if the user has
 Java installed:
 
 ```ruby
-conn_info = OSC::VNC::ConnView.new(session: session)
+conn_info = OSC::VNC::ConnView.new(session)
 conn_info.render(:jnlp)
 ```
 
@@ -85,32 +76,23 @@ information.
 
 ### VNC Server options
 
-You can specify different options when running a vnc session. When choosing the
-batch system to submit the job to `compute` vs `oxymoron`, a default set of
-options found in [config/script.yml](config/script.yml) are applied to your job. When
-choosing a cluster `glenn`, `oakley`, or `ruby` the cluster specific set of
-default options are located in [config/cluster.yml](config/cluster.yml).
+You can specify different options when running a vnc session. You can use the
+`default` set of VNC options to submit the job with or choose from pre-defined
+subtypes (i.e., `:shared`) found in [config/script.yml](config/script.yml).
 
 You can alter these options when creating a session by specifying them as a
-hash in the `:options` key when initializing the object or modifying the batch
-object if they are cluster specific. An example:
+hash in the when initializing the `ScriptView` object. An example:
 
 ```ruby
 # Specify your personal VNC session options to override defaults
-options = {
-    :geom => '1920x1200',
-    :'otp?' => false,
-    :'vncauth?' => true,
-    :'ssh_tunnel?' => true
-  }
-
-
-# We now create our session, note that we now append an `options` parameter
-batch = OSC::VNC::Batch.new(name: 'oxymoron', cluster: 'oakley',
-    load_turbovnc: 'module load turbovnc/1.2.90')
-session = OSC::VNC::Session.new(batch: batch xstartup: xstartup,
-    outdir: outdir, headers: headers, resources: resources, envvars: envvars,
-    options: options)
+script = OSC::VNC::ScriptView.new(
+  :vnc,
+  'oakley',
+  :geom => '1920x1200',
+  :'otp?' => false,
+  :'vncauth?' => true,
+  :'ssh_tunnel?' => true
+)
 ```
 
 ### xstartup
@@ -134,6 +116,7 @@ xsetroot -solid grey
 # We need a window manager otherwise the windows will
 # look horrendous, for this we use FVWM (please refer to
 # FillSim for an example of the `fvwmrc` file used)
+export XSTARTUP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 XDIR=${XSTARTUP_DIR} /usr/bin/fvwm -f ${XSTARTUP_DIR}/fvwm/fvwmrc &
 
 # Load the required modules on Oakley

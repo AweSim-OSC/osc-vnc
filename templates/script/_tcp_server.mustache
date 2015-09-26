@@ -1,0 +1,6 @@
+{{#tcp_server?}}
+# Send connection information over a TCP connection
+# The server information should have been passed as environment variables
+nc ${LISTEN_HOST} ${LISTEN_PORT} < ${VNC_OUTFILE}
+rm -f ${VNC_OUTFILE}
+{{/tcp_server?}}

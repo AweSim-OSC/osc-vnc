@@ -1,15 +1,7 @@
 # Set some environment variables used by this script
-export XSTARTUP_DIR={{xstartup_dir}}  # needed by fvwm
+{{> _setup_env}}
 export VNC_PASSFILE={{outdir}}/${PBS_JOBID}.pass
-export VNC_LOGFILE={{outdir}}/${PBS_JOBID}.log
-{{#tcp_server?}}
-export VNC_OUTFILE=$(mktemp)
-{{/tcp_server?}}
-{{^tcp_server?}}
-export VNC_OUTFILE={{outdir}}/${PBS_JOBID}.conn
-{{/tcp_server?}}
 
-{{#vnc?}}
 # Use turbovnc
 {{{load_turbovnc}}}
 
@@ -24,16 +16,14 @@ function change_passwd {
 }
 change_passwd
 {{/vncauth?}}
-{{/vnc?}}
 
 # Function that creates a connection information file
 function create_connfile {
-    # Output information
     echo "Host: ${HOST}" > ${VNC_OUTFILE}
     echo "Port: ${HOST_PORT}" >> ${VNC_OUTFILE}
-    echo "Pass: ${PASSWORD}" >> ${VNC_OUTFILE}
-    echo "SPass: ${SPASSWORD}" >> ${VNC_OUTFILE}
-    echo "Display: ${DISPLAY_PORT}" >> ${VNC_OUTFILE}
+    echo "Password: ${PASSWORD}" >> ${VNC_OUTFILE}
+    echo "SPassword: ${SPASSWORD}" >> ${VNC_OUTFILE}
+    echo "Display_Port: ${DISPLAY_PORT}" >> ${VNC_OUTFILE}
     chmod 600 ${VNC_OUTFILE}
 }
 
@@ -41,42 +31,12 @@ function create_connfile {
 # Note: must be defined after `module load`
 function clean_up {
     echo "Exiting..."
-    {{#vnc?}}
-    # Better safe than sorry when cleaning up vnc server
     vncserver -kill :${DISPLAY_PORT}
-    {{/vnc?}}
-    # Run developer cleanup script
     {{{xlogout}}}
 }
 trap clean_up TERM EXIT
 
-{{#vnc?}}
-# Start up vnc server and create output
-# If two servers start simultaneously one will fail, loop until it succeeds
-i=0
-while [[ -z ${VNC_PID} && ${i} -lt 30 ]]; do
-    # Clean up any failed vnc sessions that didn't clean themselves up
-    vncserver -list | awk '/^:/{display[$1] = $2} END{for(key in display) { if( system( "[ ! -e /proc/" display[key] " ]" ) == 0 ) { system( "vncserver -kill " key ) } }}'
-    # Run the vncserver
-    VNC_OUT=$(vncserver -name {{name}} -geometry {{geom}} -dpi {{dpi}} -fp {{fonts}} -{{^otp?}}no{{/otp?}}otp {{#vncauth?}}-rfbauth ${VNC_PASSFILE}{{/vncauth?}}{{^vncauth?}}-novncauth{{/vncauth?}} -{{^pam?}}no{{/pam?}}pam -nohttpd -idletimeout {{idletimeout}} -log ${VNC_LOGFILE} -noxstartup {{{extra_args}}} 2>&1)
-    VNC_PID=$(pgrep -s 0 Xvnc)  # Get process id
-    # VNC couldn't find display so died
-    if [[ -z ${VNC_PID} ]]; then
-        sleep 0.$(($RANDOM % 100))s # Sleep between 0-1 seconds
-    fi
-    # Sometimes VNC will hang if it fails to find working display
-    if [[ ! -z ${VNC_PID} && ${VNC_OUT} =~ "Fatal server error" ]]; then
-        kill -9 ${VNC_PID}
-        unset VNC_PID
-    fi
-    i=$((i+1))  # increment counter
-done
-echo "${VNC_OUT}"
-
-# Make sure it is running otherwise exit with error code 1
-if [[ -z ${VNC_PID} ]]; then
-    exit 1
-fi
+{{> _start_vncserver}}
 
 # Parse output for ports
 DISPLAY_PORT=$(echo "${VNC_OUT}" | awk -F':' '/^Desktop/{print $NF}')
@@ -86,52 +46,14 @@ HOST_PORT=$((5900+DISPLAY_PORT))
 # Parse output for password
 PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
 {{/otp?}}
-{{/vnc?}}
-
-{{^vnc?}}
-# Create logfile
-> ${VNC_LOGFILE}
-
-{{#xinit}}
-# Run developer supplied xinit script
-source {{xinit}}
-{{/xinit}}
-{{/vnc?}}
 
 # Run the xstartup script on proper vncserver display
-{{#vnc?}}DISPLAY=:${DISPLAY_PORT}{{/vnc?}} {{xstartup}} >> ${VNC_LOGFILE} 2>&1 &
+DISPLAY=:${DISPLAY_PORT} {{xstartup}} >> ${VNC_LOGFILE} 2>&1 &
 SCRIPT_PID=$(pgrep -s 0 -f {{xstartup}})
 
-{{#ssh_tunnel?}}
-HOST=$(hostname)
-{{/ssh_tunnel?}}
-{{^ssh_tunnel?}}
-# Get correct host
-#
-#    opt2647.ten.osc.edu => vis033.osc.edu
-#    opt2648.ten.osc.edu => vis034.osc.edu
-#    opt2649.ten.osc.edu => vis035.osc.edu
-#    opt2650.ten.osc.edu => vis036.osc.edu
-#    n0691.ten.osc.edu   => oak-vis001.osc.edu
-#    n0692.ten.osc.edu   => oak-vis002.osc.edu
-#
-# 1. we grep the output of /sbin/ip a s to 192.148.0.0/16 to get 192.148.248.70/24, getting the first match only to ignore 192.148.248.255
-#
-#    7: eth0.70@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
-#        inet 192.148.248.75/24 brd 192.148.248.255 scope global eth0.70
-#
-# 2. we use this as argument to dig i.e. dig +short -x 192.148.248.70
-#
-#     vis033.osc.edu.
-#
-# 3. we get rid of the ending .
-function public_hostname {
-    /sbin/ip a s to 192.148.0.0/16 | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -n1 | xargs dig +short -x | sed 's/\.$//'
-}
-HOST=$(public_hostname)
-{{/ssh_tunnel?}}
+{{> _ssh_tunnel}}
 
-{{#vnc?}}{{#vncauth?}}
+{{#vncauth?}}
 # Check for authenticated user connections to VNC server then change password
 while read -r line; do
     if [[ ${line} =~ "Full-control authentication enabled for" ]]; then
@@ -140,21 +62,15 @@ while read -r line; do
         echo "Changing VNC password..." >> ${VNC_LOGFILE}
     fi
 done < <(tail -f ${VNC_LOGFILE}) &
-{{/vncauth?}}{{/vnc?}}
+{{/vncauth?}}
 
 # Create the connection file
 create_connfile
 
-{{#tcp_server?}}
-# Send connection information over a TCP connection
-# The server information should have been passed as environment variables
-nc ${LISTEN_HOST} ${LISTEN_PORT} < ${VNC_OUTFILE}
-rm -f ${VNC_OUTFILE}
-{{/tcp_server?}}
+{{> _tcp_server}}
 
 # Wait for main process to finish
-MAIN_PID={{#vnc?}}${VNC_PID}{{/vnc?}}{{^vnc?}}${SCRIPT_PID}{{/vnc?}}
-while [ -e /proc/${MAIN_PID} ]; do sleep 0.1; done
+while [ -e /proc/${VNC_PID} ]; do sleep 0.1; done
 
 # Exit cleanly
 exit 0

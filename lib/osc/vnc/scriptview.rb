@@ -1,6 +1,6 @@
+require 'fileutils'
 require 'mustache'
 require 'yaml'
-require 'forwardable'
 
 module OSC
   module VNC
@@ -8,56 +8,37 @@ module OSC
     # template in templates/script/vnc.mustache. Extra options can be passed to
     # this view and accessed directly in the mustache template.
     class ScriptView < Mustache
-      extend Forwardable
+      self.template_path = SCRIPT_TEMPLATE_PATH
 
-      self.template_file = "#{SCRIPT_TEMPLATE_PATH}/vnc.mustache"
+      # @param type [Symbol] The script type defined in config/script.yml (:vnc or :server).
+      # @param cluster [String] The cluster the job will run on defined in config/cluster.yml.
+      # @param opts [Hash] The options used to construct PBS batch script view.
+      def initialize(type, cluster, opts = {})
+        self.template_name = type
 
-      # @return [Batch] the type of batch server to use
-      attr_reader :batch
+        # Read in pre-configured options
+        script_cfg = YAML.load_file("#{CONFIG_PATH}/script.yml").fetch(type.to_s, {})
+        subtype_opts = script_cfg[opts[:subtype].to_s] || script_cfg['default']
+        cluster_opts = subtype_opts.fetch('cluster', {}).fetch(cluster, {})
+        context = subtype_opts.merge cluster_opts
 
-      # Constructs a new view for the PBS batch script template
-      #
-      # @param [Hash] args the arguments used to construct PBS batch script view
-      # @option args [Batch] :batch the batch server job will run on ('glenn', 'oakley', 'ruby', 'oxymoron')
-      # @option args [String] :xstartup the path of the VNC xstartup script (main script that is run)
-      # @option args [String] :xlogout the path of the VNC xlogout script (script run when job finishes)
-      # @option args [String] :outdir the output directory path
-      # @option args [Hash] :options the hash describing any other options utilized by the batch script template
-      def initialize(args = {})
-        @batch = args[:batch]
-
-        # Merge all arguments passed in as data for the view and template.
         @view_context = {}
-        @view_context[:xstartup] = args[:xstartup]
-        @view_context[:xlogout]  = args[:xlogout]
-        @view_context[:outdir]   = args[:outdir]
-        @view_context.merge!(args[:options] || {})
-
-        # Read in VNC specific args depending if shared node or not
-        script_cfg = YAML.load_file("#{CONFIG_PATH}/script.yml")
-        if batch.shared?
-          @view_context = script_cfg['shared'].merge @view_context
-        else
-          @view_context = script_cfg['default'].merge @view_context
+        context.each do |key, value|
+          @view_context[key.to_sym] = value
         end
+        @view_context.merge! opts
+        @view_context[:cluster] = cluster
       end
 
-      # Based on the xstartup path, also display directory to this file.
+      # Determine whether the script is valid or not
       #
-      # @return [String] path to xstartup directory
-      def xstartup_dir
-        File.dirname xstartup
+      # @return [Boolean] Whether this is a valid script.
+      # @raise [InvalidPath] if {#xstartup} or {#outdir} do not correspond to actual file system locations
+      def valid?
+        raise InvalidPath, "xstartup script is not found" unless File.file?(xstartup)
+        raise InvalidPath, "output directory is a file" if File.file?(outdir)
+        FileUtils.mkdir_p(outdir)
       end
-
-      # @!method fonts
-      #   The fonts used by the vnc server.
-      #   @return [String] The fonts
-      #   @see Batch#fonts
-      # @!method load_turbovnc
-      #   The bash command used to load turbovnc
-      #   @return [String] The bash command to load turbovnc module
-      #   @see Batch#load_turbovnc
-      def_delegators :batch, :fonts, :load_turbovnc
 
       # See if the method call exists as a key in @view_context.
       #
@@ -65,7 +46,7 @@ module OSC
       # @param arguments the arguments to the call
       # @param block an optional block for the call
       def method_missing(method_name, *arguments, &block)
-        @view_context.fetch(method_name) { @view_context.fetch(method_name.to_s) { super }}
+        @view_context.fetch(method_name) { super }
       end
 
       # Checks if the method responds to an instance method, or is able to
@@ -74,7 +55,7 @@ module OSC
       # @param method_name the method name to check
       # @return [Boolean]
       def respond_to_missing?(method_name, include_private = false)
-        @view_context.include?(method_name) || @view_context.include?(method_name.to_s) || super
+        @view_context.include?(method_name) || super
       end
     end
   end

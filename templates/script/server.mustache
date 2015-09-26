@@ -1,0 +1,42 @@
+# Set some environment variables used by this script
+{{> _setup_env}}
+
+{{#xinit}}
+# Run developer supplied xinit script
+source {{xinit}}
+{{/xinit}}
+
+# Function that creates a connection information file
+function create_connfile {
+    echo "Host: ${HOST}" > ${VNC_OUTFILE}
+    echo "Port: ${HOST_PORT}" >> ${VNC_OUTFILE}
+    chmod 600 ${VNC_OUTFILE}
+}
+
+# Clean up script run when "vncserver" finishes or dies prematurely
+# Note: must be defined after `module load`
+function clean_up {
+    echo "Exiting..."
+    {{{xlogout}}}
+}
+trap clean_up TERM EXIT
+
+# Create logfile
+> ${VNC_LOGFILE}
+
+# Run the xstartup script on proper vncserver display
+{{xstartup}} >> ${VNC_LOGFILE} 2>&1 &
+SCRIPT_PID=$(pgrep -s 0 -f {{xstartup}})
+
+{{> _ssh_tunnel}}
+
+# Create the connection file
+create_connfile
+
+{{> _tcp_server}}
+
+# Wait for main process to finish
+while [ -e /proc/${SCRIPT_PID} ]; do sleep 0.1; done
+
+# Exit cleanly
+exit 0

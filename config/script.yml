@@ -1,9 +1,7 @@
-# Batch script options depending on batch type
-
-default: &DEFAULT_VIEW
-    name: vnc
-    vnc?: true
-    geom: 800x600
+vnc:
+  default: &DEFAULT_VNC
+    name: 'vnc'
+    geom: '800x600'
     dpi: 96
     idletimeout: 0
     extra_args: null
@@ -12,10 +10,27 @@ default: &DEFAULT_VIEW
     pam?: false
     ssh_tunnel?: true
     tcp_server?: false
-
-shared:
-    <<: *DEFAULT_VIEW
+    cluster:
+      glenn:
+        fonts: '/usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1'
+        load_turbovnc: |
+          module load turbovnc-1.2
+      oakley:
+        fonts: '/usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1'
+        load_turbovnc: |
+          module use /nfs/gpfs/PZS0645/local-oakley/share/modulefiles
+          module load turbovnc/1.2.90
+      ruby:
+        fonts: '/usr/share/X11/fonts/misc,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1'
+        load_turbovnc: |
+          module use /nfs/gpfs/PZS0645/local-ruby/share/modulefiles
+          module load turbovnc/1.2.90
+  shared:
+    <<: *DEFAULT_VNC
     idletimeout: 300
-    otp?: true
-    vncauth?: false
     tcp_server?: true
+
+server:
+  default: &DEFAULT_SERVER
+    ssh_tunnel?: true
+    tcp_server?: false

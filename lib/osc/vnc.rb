@@ -18,7 +18,6 @@ end
 
 require_relative 'vnc/version'
 require_relative 'vnc/error'
-require_relative 'vnc/batch'
 require_relative 'vnc/session'
 require_relative 'vnc/scriptview'
 require_relative 'vnc/connview'
