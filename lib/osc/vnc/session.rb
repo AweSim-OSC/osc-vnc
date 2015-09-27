@@ -15,8 +15,8 @@ module OSC
       # @return [ScriptView] The batch script used.
       attr_reader :script
 
-      # @param [PBS::Job] The job object used.
-      # @param [ScriptView] The batch script used.
+      # @param job [PBS::Job] The job object used.
+      # @param script [ScriptView] The batch script used.
       # @param opts [Hash] The options used to construct a session.
       def initialize(job, script, opts = {})
         @job = job
@@ -25,6 +25,10 @@ module OSC
 
       # Submit the VNC job to the defined batch server.
       #
+      # @param opts [Hash] The options used in job submission.
+      # @option opts [Hash] :headers The headers for the PBS job.
+      # @option opts [Hash] :resources The resources for the PBS job.
+      # @option opts [Hash] :envvars The environment variables for the PBS job.
       # @return [Session] the session object
       def submit(opts = {})
         script.valid? # check if script is valid (can raise errors here)
