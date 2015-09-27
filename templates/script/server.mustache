@@ -10,6 +10,7 @@ source {{xinit}}
 function create_connfile {
     echo "Host: ${HOST}" > ${VNC_OUTFILE}
     echo "Port: ${HOST_PORT}" >> ${VNC_OUTFILE}
+    echo "Password: " >> ${VNC_OUTFILE}
     chmod 600 ${VNC_OUTFILE}
 }
 
