@@ -33,7 +33,7 @@ module OSC
       # Determine whether the script is valid or not
       #
       # @return [Boolean] Whether this is a valid script.
-      # @raise [InvalidPath] if {#xstartup} or {#outdir} do not correspond to actual file system locations
+      # @raise [InvalidPath] if { #xstartup } or { #outdir } do not correspond to actual file system locations
       def valid?
         raise InvalidPath, "xstartup script is not found" unless File.file?(xstartup)
         raise InvalidPath, "output directory is a file" if File.file?(outdir)
