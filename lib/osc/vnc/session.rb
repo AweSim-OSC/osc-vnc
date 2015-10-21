@@ -33,14 +33,18 @@ module OSC
       def submit(opts = {})
         script.valid? # check if script is valid (can raise errors here)
 
+        h = opts.fetch(:headers, {})
+        r = opts.fetch(:resources, {})
+        e = opts.fetch(:envvars, {})
+
         # Create tcp listen server if requested
-        listen_server = _create_listen_server if script.tcp_server?
+        listen_server = _create_listen_server(e) if script.tcp_server?
 
         job.submit(
           string: script.render,
-          headers: _get_headers(opts[:headers] || {}),
-          resources: _get_resources(opts[:resources] || {}),
-          envvars: _get_envvars(opts[:envvars] || {}),
+          headers: _get_headers(h),
+          resources: _get_resources(r),
+          envvars: _get_envvars(e),
           qsub: true
         )
 
@@ -87,10 +91,10 @@ module OSC
 
       # Create a tcp listen server and set appropriate environment variables.
       # for batch script to phone home
-      def _create_listen_server
+      def _create_listen_server(envvars)
         listen_server = create_listen
         _, port, host, _ = listen_server.addr(:hostname)
-        @envvars.merge! LISTEN_HOST: host, LISTEN_PORT: port
+        envvars.merge! LISTEN_HOST: host, LISTEN_PORT: port
         listen_server
       end
 
