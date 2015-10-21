@@ -11,8 +11,9 @@ module OSC
       self.template_path = SCRIPT_TEMPLATE_PATH
 
       # @param type [Symbol] The script type defined in config/script.yml (:vnc or :server).
-      # @param cluster [String] The cluster the job will run on defined in config/cluster.yml.
+      # @param cluster [String] The cluster the job will run on defined in config/script.yml.
       # @param opts [Hash] The options used to construct PBS batch script view.
+      # @option opts [Symbol] :subtype The subtype (i.e., :default or :shared) outlined in config/script.yml.
       def initialize(type, cluster, opts = {})
         self.template_name = type
 
