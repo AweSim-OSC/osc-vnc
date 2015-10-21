@@ -23,8 +23,13 @@ $ bundle install --local
 For all cases we will need to create a new VNC session object. To create a VNC
 session object you need to supply it the required information:
 
-* a batch object with the batch server name and the cluster you will submit it to
-* the `xstartup` script that will run when the VNC server is launched
+* a `PBS::Job` object that connects to the specified batch server
+* the PBS script that will run when the job is submitted, defined by
+  * type of script (`:vnc` or `:server`)
+    * `:vnc` launches a VNC server
+    * `:server` doesn't launch a VNC server (expects developer specified server in `xstartup`)
+  * cluster type (`:glenn`, `:oakley`, `:ruby`), not to be confused with the
+    batch server (i.e., `quick-batch` can use `:oakley` or `:ruby`)
 
 A bare bones setup would be:
 
