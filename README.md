@@ -35,7 +35,13 @@ A bare bones setup would be:
 
 ```ruby
 job = PBS::Job.new(conn: PBS::Conn.batch('quick'))
-script = OSC::VNC::ScriptView.new(:vnc, 'oakley', xstartup: '/path/to/script', outdir: ENV['PWD'])
+script = OSC::VNC::ScriptView.new(
+    :vnc,
+    'oakley',
+    :subtype => :shared,
+    :xstartup => '/path/to/script',
+    :outdir => ENV['PWD']
+)
 
 session = OSC::VNC::Session.new(job, script)
 ```
@@ -93,10 +99,12 @@ hash in the when initializing the `ScriptView` object. An example:
 script = OSC::VNC::ScriptView.new(
   :vnc,
   'oakley',
+  :subtype => :shared,
   :geom => '1920x1200',
   :'otp?' => false,
   :'vncauth?' => true,
-  :'ssh_tunnel?' => true
+  :'ssh_tunnel?' => true,
+  ...
 )
 ```
 
