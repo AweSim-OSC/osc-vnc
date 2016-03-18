@@ -72,6 +72,11 @@ module OSC
           PBS::ATTR[:S] => "/bin/bash",
         }.merge headers
         h[PBS::ATTR[:N]] = "#{ENV['APP_TOKEN']}/#{h[PBS::ATTR[:N]]}" if ENV['APP_TOKEN']
+
+        # add primary group as charged account
+        grp = Etc.getgrgid(Process.gid).name
+        h[PBS::ATTR[:A]] ||= grp if grp =~ /^P./
+
         h
       end
 
