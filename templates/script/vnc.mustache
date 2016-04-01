@@ -5,6 +5,11 @@ export VNC_PASSFILE={{outdir}}/${PBS_JOBID}.pass
 # Use turbovnc
 {{{load_turbovnc}}}
 
+{{#novnc?}}
+# Use noVNC
+{{{load_novnc}}}
+{{/novnc?}}
+
 {{#vncauth?}}
 # Allow the ability to dynamically change VNC password
 function change_passwd {
@@ -24,6 +29,7 @@ function create_connfile {
     echo "Password: ${PASSWORD}" >> ${VNC_OUTFILE}
     echo "SPassword: ${SPASSWORD}" >> ${VNC_OUTFILE}
     echo "Display_Port: ${DISPLAY_PORT}" >> ${VNC_OUTFILE}
+    echo "Web_Port: ${WEB_PORT}" >> ${VNC_OUTFILE}
     chmod 600 ${VNC_OUTFILE}
 }
 
@@ -63,6 +69,15 @@ while read -r line; do
     fi
 done < <(tail -f ${VNC_LOGFILE}) &
 {{/vncauth?}}
+
+{{#novnc?}}
+# Port helpers
+{{> _port_helpers}}
+
+# Launch noVNC on available port
+export WEB_PORT=$(get_port)
+launch.sh --vnc localhost:${HOST_PORT} --listen ${WEB_PORT}
+{{/novnc?}}
 
 # Create the connection file
 create_connfile
