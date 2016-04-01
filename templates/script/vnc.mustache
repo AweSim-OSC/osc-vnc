@@ -76,7 +76,7 @@ done < <(tail -f ${VNC_LOGFILE}) &
 
 # Launch noVNC on available port
 export WEB_PORT=$(get_port)
-launch.sh --vnc localhost:${HOST_PORT} --listen ${WEB_PORT}
+launch.sh --vnc localhost:${HOST_PORT} --listen ${WEB_PORT} >> ${VNC_LOGFILE} 2>&1 &
 {{/novnc?}}
 
 # Create the connection file
