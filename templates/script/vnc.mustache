@@ -59,6 +59,15 @@ SCRIPT_PID=$(pgrep -s 0 -f {{xstartup}})
 
 {{> _ssh_tunnel}}
 
+{{#novnc?}}
+# Port helpers
+{{> _port_helpers}}
+
+# Launch noVNC on available port
+export WEB_PORT=$(get_port)
+launch.sh --vnc localhost:${HOST_PORT} --listen ${WEB_PORT} >> ${VNC_LOGFILE} 2>&1 &
+{{/novnc?}}
+
 {{#vncauth?}}
 # Check for authenticated user connections to VNC server then change password
 while read -r line; do
@@ -69,15 +78,6 @@ while read -r line; do
     fi
 done < <(tail -f ${VNC_LOGFILE}) &
 {{/vncauth?}}
-
-{{#novnc?}}
-# Port helpers
-{{> _port_helpers}}
-
-# Launch noVNC on available port
-export WEB_PORT=$(get_port)
-launch.sh --vnc localhost:${HOST_PORT} --listen ${WEB_PORT} >> ${VNC_LOGFILE} 2>&1 &
-{{/novnc?}}
 
 # Create the connection file
 create_connfile
