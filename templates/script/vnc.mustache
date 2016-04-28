@@ -5,11 +5,6 @@ export VNC_PASSFILE={{outdir}}/${PBS_JOBID}.pass
 # Use turbovnc
 {{{load_turbovnc}}}
 
-{{#novnc?}}
-# Use noVNC
-{{{load_novnc}}}
-{{/novnc?}}
-
 {{#vncauth?}}
 # Allow the ability to dynamically change VNC password
 function change_passwd {
@@ -65,7 +60,7 @@ SCRIPT_PID=$(pgrep -s 0 -f {{xstartup}})
 
 # Launch noVNC on available port
 export WEB_PORT=$(get_port)
-launch.sh --vnc localhost:${HOST_PORT} --listen ${WEB_PORT} >> ${VNC_LOGFILE} 2>&1 &
+{{{novnc_launcher}}} --vnc localhost:${HOST_PORT} --listen ${WEB_PORT} >> ${VNC_LOGFILE} 2>&1 &
 {{/novnc?}}
 
 {{#vncauth?}}
