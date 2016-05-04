@@ -73,9 +73,9 @@ module OSC
         }.merge headers
         h[PBS::ATTR[:N]] = "#{ENV['APP_TOKEN']}/#{h[PBS::ATTR[:N]]}" if ENV['APP_TOKEN']
 
-        # add primary group as charged account
-        grp = Etc.getgrgid(Process.gid).name
-        h[PBS::ATTR[:A]] ||= grp if grp =~ /^P./
+        # add first charged account group as default account
+        account = Process.groups.map {|g| Etc.getgrgid(g).name}.grep(/^P./).first
+        h[PBS::ATTR[:A]] ||= account if account
 
         h
       end
