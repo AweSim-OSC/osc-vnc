@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.platform      = Gem::Platform::RUBY
   spec.authors       = ["Jeremy Nicklas"]
   spec.email         = ["jnicklas@osc.edu"]
-  spec.summary       = %q{Library to create VNC jobs with HPC resources}
-  spec.description   = %q{This library submits VNC jobs to the Oxymoron cluster as well as obtains the connection information required for a connection to take place with a VNC client.}
+  spec.summary       = %q{Library to create VNC jobs with HPC resources (OSC specific)}
+  spec.description   = %q{This library submits VNC jobs to the Oxymoron cluster as well as obtains the connection information required for a connection to take place with a VNC client. (OSC specific)}
   spec.homepage      = "https://github.com/OSC/osc-vnc"
   spec.license       = "MIT"
 
