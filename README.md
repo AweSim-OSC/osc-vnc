@@ -13,7 +13,7 @@ gem 'osc-vnc'
 Run Bundler to update your gems:
 
 ```bash
-$ bundle install --local
+$ bundle install
 ```
 
 ## Examples
