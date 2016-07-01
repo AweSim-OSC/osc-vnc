@@ -15,14 +15,12 @@ vnc:
       oakley:
         fonts: '/usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1'
         load_turbovnc: |
-          module use /nfs/gpfs/PZS0645/local-oakley/share/modulefiles
-          module load turbovnc/2.0.0
+          module load turbovnc/2.0
         novnc_launcher: '/usr/local/novnc/utils/launch.sh'
       ruby:
         fonts: '/usr/share/X11/fonts/misc,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1'
         load_turbovnc: |
-          module use /nfs/gpfs/PZS0645/local-ruby/share/modulefiles
-          module load turbovnc/2.0.0
+          module load turbovnc/2.0
         novnc_launcher: '/usr/local/novnc/utils/launch.sh'
   shared:
     <<: *DEFAULT_VNC
