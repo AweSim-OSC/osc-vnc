@@ -10,9 +10,9 @@ while [[ -z ${VNC_PID} && ${i} -lt 30 ]]; do
         -geometry {{geom}} \
         -dpi {{dpi}} \
         -fp {{fonts}} \
-        -{{^otp?}}no{{/otp?}}otp \
+        {{#otp?}}-otp{{/otp?}} \
         {{#vncauth?}}-rfbauth ${VNC_PASSFILE}{{/vncauth?}}{{^vncauth?}}-novncauth{{/vncauth?}} \
-        -{{^pam?}}no{{/pam?}}pam \
+        {{#pam?}}-pam{{/pam?}} \
         -nohttpd \
         -idletimeout {{idletimeout}} \
         -log ${VNC_LOGFILE} \
