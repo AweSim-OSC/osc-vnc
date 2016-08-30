@@ -11,10 +11,15 @@ module OSC
       # @return [Session] The session object with connection information.
       attr_reader :session
 
+      # @return [Pathname] The path to the connection file.
+      attr_reader :connfile
+
       # @param session [Session] The session object with the connection information.
+      # @param connfile [#to_s] The connection file with the connection information.
       # @param opts [Hash] The options used to construct a connection information view.
-      def initialize(session, opts = {})
+      def initialize(session, connfile, opts = {})
         @session = session
+        @connfile = Pathname.new(connfile.to_s)
         refresh
       end
 
@@ -45,7 +50,7 @@ module OSC
       # @raise [InvalidPath] if connection file does not exist
       # @raise [InvalidConnInfo] if connection file doesn't contain required information (i.e.: host, port, display, password)
       def refresh
-        _get_file_contents(session.conn_file)
+        _get_file_contents(connfile.to_s)
         self
       end
 

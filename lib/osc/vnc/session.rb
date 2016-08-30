@@ -52,14 +52,6 @@ module OSC
         id
       end
 
-      # The connection information file.
-      #
-      # @return [String] path to connection information file for this session
-      def conn_file
-        "#{script.outdir}/#{job.id}.conn"
-      end
-
-
       private
 
       # The hash of PBS header attributes for the job.
