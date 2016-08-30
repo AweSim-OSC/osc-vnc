@@ -9,17 +9,17 @@ module OSC
     class Session
       include OSC::VNC::Listenable
 
-      # @return [PBS::Job] The job object used.
-      attr_reader :job
+      # @return [PBS::Batch] The batch object used.
+      attr_reader :batch
 
       # @return [ScriptView] The batch script used.
       attr_reader :script
 
-      # @param job [PBS::Job] The job object used.
+      # @param job [PBS::Batch] The batch object used.
       # @param script [ScriptView] The batch script used.
       # @param opts [Hash] The options used to construct a session.
-      def initialize(job, script, opts = {})
-        @job = job
+      def initialize(batch, script, opts = {})
+        @batch = batch
         @script = script
       end
 
@@ -40,17 +40,16 @@ module OSC
         # Create tcp listen server if requested
         listen_server = _create_listen_server(e) if script.tcp_server?
 
-        job.submit(
-          string: script.render,
+        id = batch.submit_string(
+          script.render,
           headers: _get_headers(h),
           resources: _get_resources(r),
-          envvars: _get_envvars(e),
-          qsub: true
+          envvars: _get_envvars(e)
         )
 
         _write_listen_conn_info(listen_server) if script.tcp_server?
 
-        self
+        id
       end
 
       # The connection information file.
