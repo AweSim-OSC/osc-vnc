@@ -2,15 +2,15 @@
 {{> _setup_env}}
 
 {{#xinit}}
-# Port helpers
-{{> _port_helpers}}
+# Bash helper functions
+{{> _bash_helpers}}
 
 # Run developer supplied xinit script
 source {{xinit}}
 {{/xinit}}
 
 # Function that creates a connection information file
-function create_connfile {
+function create_yml {
     echo "Host: ${HOST}" > ${VNC_OUTFILE}
     echo "Port: ${HOST_PORT}" >> ${VNC_OUTFILE}
     echo "Password: ${PASSWORD}" >> ${VNC_OUTFILE}
@@ -34,13 +34,23 @@ SCRIPT_PID=$(pgrep -s 0 -f {{xstartup}})
 
 {{> _ssh_tunnel}}
 
+{{#after}}
+# Run developer supplied after script
+source {{after}}
+{{/after}}
+
 # Create the connection file
-create_connfile
+create_yml
 
 {{> _tcp_server}}
 
 # Wait for main process to finish
 while [ -e /proc/${SCRIPT_PID} ]; do sleep 0.1; done
+
+{{#clean}}
+# Run developer supplied clean script
+source {{clean}}
+{{/clean}}
 
 # Exit cleanly
 exit 0

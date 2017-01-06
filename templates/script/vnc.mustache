@@ -55,11 +55,11 @@ SCRIPT_PID=$(pgrep -s 0 -f {{xstartup}})
 {{> _ssh_tunnel}}
 
 {{#novnc?}}
-# Port helpers
-{{> _port_helpers}}
+# Bash helper functions
+{{> _bash_helpers}}
 
 # Launch noVNC on available port
-export WEB_PORT=$(get_port)
+export WEB_PORT=$(find_port)
 {{{novnc_launcher}}} --vnc localhost:${HOST_PORT} --listen ${WEB_PORT} >> ${VNC_LOGFILE} 2>&1 &
 {{/novnc?}}
 
