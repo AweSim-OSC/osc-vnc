@@ -63,12 +63,6 @@ module OSC
           PBS::ATTR[:S] => "/bin/bash",
           PBS::ATTR[:init_work_dir] => script.outdir
         }.merge headers
-        h[PBS::ATTR[:N]] = "#{ENV['APP_TOKEN']}/#{h[PBS::ATTR[:N]]}" if ENV['APP_TOKEN']
-
-        # add first charged account group as default account
-        account = Process.groups.map {|g| Etc.getgrgid(g).name}.grep(/^P./).first
-        h[PBS::ATTR[:A]] ||= account if account
-
         h
       end
 
