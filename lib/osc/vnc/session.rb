@@ -61,6 +61,7 @@ module OSC
           PBS::ATTR[:o] => "#{script.outdir}/$PBS_JOBID.output",
           PBS::ATTR[:j] => "oe",
           PBS::ATTR[:S] => "/bin/bash",
+          PBS::ATTR[:init_work_dir] => script.outdir
         }.merge headers
         h[PBS::ATTR[:N]] = "#{ENV['APP_TOKEN']}/#{h[PBS::ATTR[:N]]}" if ENV['APP_TOKEN']
 
