@@ -2,6 +2,9 @@
 {{> _setup_env}}
 export VNC_PASSFILE={{outdir}}/${PBS_JOBID}.pass
 
+# Set the host
+HOST=$(hostname)
+
 # Use turbovnc
 {{{load_turbovnc}}}
 
@@ -51,8 +54,6 @@ PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
 # Run the xstartup script on proper vncserver display
 DISPLAY=:${DISPLAY_PORT} {{xstartup}} >> ${VNC_LOGFILE} 2>&1 &
 SCRIPT_PID=$(pgrep -s 0 -f {{xstartup}})
-
-{{> _ssh_tunnel}}
 
 {{#novnc?}}
 # Bash helper functions
