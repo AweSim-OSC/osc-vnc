@@ -53,7 +53,7 @@ PASSWORD=$(echo "${VNC_OUT}" | awk '/^Full/{print $NF}')
 
 # Run the xstartup script on proper vncserver display
 DISPLAY=:${DISPLAY_PORT} {{xstartup}} >> ${VNC_LOGFILE} 2>&1 &
-SCRIPT_PID=$(pgrep -s 0 -f {{xstartup}})
+SCRIPT_PID=$!
 
 {{#novnc?}}
 # Bash helper functions
