@@ -12,8 +12,8 @@ HOST=$(hostname)
 # Allow the ability to dynamically change VNC password
 function change_passwd {
     # Generate password for VNC
-    PASSWORD=$(mkpasswd -s 0 -l 8)  # passwords truncated to 8 letters
-    SPASSWORD=${SPASSWORD:-$(mkpasswd -s 0 -l 8)}
+    PASSWORD=$(create_passwd 8)  # passwords truncated to 8 letters
+    SPASSWORD=${SPASSWORD:-$(create_passwd 8)}
     printf "${PASSWORD}\n${SPASSWORD}" | vncpasswd -f > ${VNC_PASSFILE}
     chmod 600 ${VNC_PASSFILE}
 }
