@@ -2,6 +2,9 @@
 {{> _setup_env}}
 export VNC_PASSFILE={{outdir}}/${PBS_JOBID}.pass
 
+# Bash helper functions
+{{> _bash_helpers}}
+
 # Set the host
 HOST=$(hostname)
 
