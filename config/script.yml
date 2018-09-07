@@ -16,19 +16,19 @@ vnc:
         fonts: '/usr/share/X11/fonts/misc,/usr/share/X11/fonts/75dpi,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1'
         load_turbovnc: |
           module restore
-          module load turbovnc/2.0.91
+          module load intel/16.0.3 turbovnc/2.0.91
         novnc_launcher: '/usr/local/novnc/utils/launch.sh'
       ruby:
         fonts: '/usr/share/X11/fonts/misc,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1'
         load_turbovnc: |
           module restore
-          module load turbovnc/2.0.91
+          module load intel/16.0.3 turbovnc/2.0.91
         novnc_launcher: '/usr/local/novnc/utils/launch.sh'
       owens:
         fonts: '/usr/share/X11/fonts/misc,/usr/share/X11/fonts/100dpi,/usr/share/X11/fonts/Type1,/usr/share/fonts/default/Type1'
         load_turbovnc: |
           module restore
-          module load turbovnc/2.0.91
+          module load intel/16.0.3 turbovnc/2.0.91
         novnc_launcher: '/usr/local/novnc/utils/launch.sh'
   shared:
     <<: *DEFAULT_VNC
